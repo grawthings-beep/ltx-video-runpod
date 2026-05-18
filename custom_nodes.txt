@@ -1,0 +1,7 @@
+# name|git url
+10S_Nodes|https://github.com/TenStrip/10S-Comfy-nodes.git
+rgthree-comfy|https://github.com/rgthree/rgthree-comfy.git
+ComfyMath|https://github.com/evanspearman/ComfyMath.git
+ComfyUI-VideoHelperSuite|https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git
+ComfyUI-LTXVideo|https://github.com/Lightricks/ComfyUI-LTXVideo.git
+RES4LYF|https://github.com/ClownsharkBatwing/RES4LYF.git
