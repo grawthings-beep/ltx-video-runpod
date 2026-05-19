@@ -77,4 +77,4 @@ H.264 video + AAC audio
 
 ## Notes
 
-The required `10Eros_v1_bf16.safetensors` and `10Eros_v1_fp8_transformer.safetensors` files are huge. First boot can still take a long time. The win is that later boots reuse `/workspace/comfyui/models` instead of redownloading.
+The required `10Eros_v1_fp8_transformer.safetensors` file is huge. First boot can still take a long time. The win is that later boots reuse `/workspace/comfyui/models` instead of redownloading.

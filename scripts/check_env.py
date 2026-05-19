@@ -15,7 +15,6 @@ REQUIRED_CUSTOM_NODES = [
 
 REQUIRED_MODELS = [
     "models/diffusion_models/10Eros_v1_fp8_transformer.safetensors",
-    "models/checkpoints/10Eros_v1_bf16.safetensors",
     "models/text_encoders/gemma_3_12B_it_fp4_mixed.safetensors",
     "models/text_encoders/ltx-2.3_text_projection_bf16.safetensors",
     "models/vae/LTX23_video_vae_bf16.safetensors",

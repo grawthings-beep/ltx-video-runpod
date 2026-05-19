@@ -71,7 +71,6 @@ First boot downloads large files. This can still be long:
 
 ```text
 10Eros_v1_fp8_transformer.safetensors    ~29.6 GB
-10Eros_v1_bf16.safetensors               ~46.1 GB
 gemma_3_12B_it_fp4_mixed.safetensors     ~9.45 GB
 ```
 

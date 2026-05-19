@@ -10,15 +10,6 @@
       }
     },
     {
-      "name": "10Eros bf16 checkpoint",
-      "enabled": true,
-      "url": "https://huggingface.co/TenStrip/LTX2.3-10Eros/resolve/main/10Eros_v1_bf16.safetensors?download=true",
-      "path": "models/checkpoints/10Eros_v1_bf16.safetensors",
-      "headers": {
-        "Authorization": "Bearer ${HF_TOKEN}"
-      }
-    },
-    {
       "name": "Gemma 3 12B text encoder fp4 mixed",
       "enabled": true,
       "url": "https://huggingface.co/Comfy-Org/ltx-2/resolve/main/split_files/text_encoders/gemma_3_12B_it_fp4_mixed.safetensors?download=true",

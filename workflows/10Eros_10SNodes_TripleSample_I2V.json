@@ -3471,47 +3471,6 @@
       "bgcolor": "#355"
     },
     {
-      "id": 646,
-      "type": "CheckpointLoaderSimple",
-      "pos": [
-        -1534.0077605688773,
-        3452.7839087861676
-      ],
-      "size": [
-        270,
-        98
-      ],
-      "flags": {},
-      "order": 20,
-      "mode": 4,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": []
-        },
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": null
-        },
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "links": []
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.20.1",
-        "Node name for S&R": "CheckpointLoaderSimple"
-      },
-      "widgets_values": [
-        "10Eros_v1_bf16.safetensors"
-      ]
-    },
-    {
       "id": 513,
       "type": "UNETLoader",
       "pos": [
@@ -3543,37 +3502,6 @@
       "widgets_values": [
         "10Eros_v1_fp8_transformer.safetensors",
         "default"
-      ]
-    },
-    {
-      "id": 617,
-      "type": "LTXVAudioVAELoader",
-      "pos": [
-        -1533.1888632469024,
-        3341.990271676721
-      ],
-      "size": [
-        270,
-        58
-      ],
-      "flags": {},
-      "order": 22,
-      "mode": 4,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "Audio VAE",
-          "type": "VAE",
-          "links": []
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.20.1",
-        "Node name for S&R": "LTXVAudioVAELoader"
-      },
-      "widgets_values": [
-        "10Eros_v1_bf16.safetensors"
       ]
     },
     {
@@ -3746,39 +3674,6 @@
         "gemma_3_12B_it_fp4_mixed.safetensors",
         "ltx-2.3_text_projection_bf16.safetensors",
         "ltxv",
-        "default"
-      ]
-    },
-    {
-      "id": 616,
-      "type": "LTXAVTextEncoderLoader",
-      "pos": [
-        -1544.1381576590957,
-        3635.802992800103
-      ],
-      "size": [
-        344.6529296875,
-        106
-      ],
-      "flags": {},
-      "order": 24,
-      "mode": 4,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": []
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.20.1",
-        "Node name for S&R": "LTXAVTextEncoderLoader"
-      },
-      "widgets_values": [
-        "gemma_3_12B_it_fp4_mixed.safetensors",
-        "10Eros_v1_bf16.safetensors",
         "default"
       ]
     },
