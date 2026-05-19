@@ -81,7 +81,7 @@ After the files are in `/workspace/comfyui/models`, later boots should skip them
 Load this workflow in ComfyUI:
 
 ```text
-workflows/10Eros_10SNodes_TripleSample_I2V.json
+workflows/video_ltx23_i2v_simple.json
 ```
 
 Replace the missing `LoadImage` file with your own input image.

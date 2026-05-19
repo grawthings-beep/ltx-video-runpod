@@ -1,8 +1,8 @@
 # RunPod LTX Video ComfyUI
 
-RunPod Community Cloud 用の ComfyUI LTX Video テンプレートです。
+RunPod Community Cloud template for an LTX 2.3 I2V ComfyUI workflow.
 
-この image は ComfyUI 本体、LTX 系 custom nodes、`aria2c` を Docker image に焼きます。巨大なモデルは `/workspace/comfyui/models` に起動時ダウンロードします。
+This image bakes ComfyUI custom nodes and `aria2c` into Docker. Large model files are downloaded to `/workspace/comfyui/models` at Pod startup so a persistent volume can reuse them across restarts.
 
 ## RunPod Template
 
@@ -36,9 +36,9 @@ Use a RunPod Secret for `HF_TOKEN`. Do not paste the token directly into a publi
 
 ## Model Storage
 
-Use a Network Volume or persistent `/workspace` volume. The full workflow model set is very large.
+Use a Network Volume or persistent `/workspace` volume. The model set is large.
 
-Important paths:
+Important real paths:
 
 ```text
 /workspace/comfyui/models/diffusion_models
@@ -47,6 +47,16 @@ Important paths:
 /workspace/comfyui/models/vae
 /workspace/comfyui/models/latent_upscale_models
 /workspace/comfyui/models/loras/ltx23
+```
+
+Startup also creates compatibility symlinks for node dropdowns:
+
+```text
+models/checkpoints/10Eros_v1_fp8_transformer.safetensors
+models/unet/10Eros_v1_fp8_transformer.safetensors
+models/checkpoints/LTX23_audio_vae_bf16.safetensors
+models/diffusion_models/LTX23_audio_vae_bf16.safetensors
+models/checkpoints/LTX23_video_vae_bf16.safetensors
 ```
 
 ## Custom Nodes
@@ -60,21 +70,19 @@ ComfyMath
 ComfyUI-VideoHelperSuite
 ComfyUI-LTXVideo
 RES4LYF
+ComfyUI-Custom-Scripts
 ```
 
 ## Workflow
 
-Load the JSON from `workflows/` into ComfyUI. Replace the missing `LoadImage` input with your own image.
-
-The generated MP4 analyzed from the matching workflow was:
+Load this workflow in ComfyUI:
 
 ```text
-896x1664
-about 10 seconds
-24 fps
-H.264 video + AAC audio
+workflows/video_ltx23_i2v_simple.json
 ```
+
+Replace the missing `LoadImage` input with your own image.
 
 ## Notes
 
-The required `10Eros_v1_fp8_transformer.safetensors` file is huge. First boot can still take a long time. The win is that later boots reuse `/workspace/comfyui/models` instead of redownloading.
+The required `10Eros_v1_fp8_transformer.safetensors` file is huge. First boot can still take a long time. Later boots reuse `/workspace/comfyui/models` and skip existing files.

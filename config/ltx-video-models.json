@@ -46,6 +46,15 @@
       }
     },
     {
+      "name": "TAE LTX 2.3 preview VAE",
+      "enabled": true,
+      "url": "https://huggingface.co/Kijai/LTX2.3_comfy/resolve/main/vae/taeltx2_3.safetensors?download=true",
+      "path": "models/vae/taeltx2_3.safetensors",
+      "headers": {
+        "Authorization": "Bearer ${HF_TOKEN}"
+      }
+    },
+    {
       "name": "LTX 2.3 spatial upscaler x2 1.1",
       "enabled": true,
       "url": "https://huggingface.co/Lightricks/LTX-2.3/resolve/main/ltx-2.3-spatial-upscaler-x2-1.1.safetensors?download=true",

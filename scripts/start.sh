@@ -91,6 +91,32 @@ else
   echo "Skipping model downloads."
 fi
 
+link_if_present() {
+  local source="$1"
+  local target="$2"
+  if [[ -f "${source}" ]]; then
+    mkdir -p "$(dirname "${target}")"
+    ln -sf "${source}" "${target}"
+  fi
+}
+
+# Compatibility aliases for LTX nodes whose dropdowns read different model folders.
+link_if_present \
+  "${MODEL_ROOT}/models/diffusion_models/10Eros_v1_fp8_transformer.safetensors" \
+  "${MODEL_ROOT}/models/checkpoints/10Eros_v1_fp8_transformer.safetensors"
+link_if_present \
+  "${MODEL_ROOT}/models/diffusion_models/10Eros_v1_fp8_transformer.safetensors" \
+  "${MODEL_ROOT}/models/unet/10Eros_v1_fp8_transformer.safetensors"
+link_if_present \
+  "${MODEL_ROOT}/models/vae/LTX23_audio_vae_bf16.safetensors" \
+  "${MODEL_ROOT}/models/checkpoints/LTX23_audio_vae_bf16.safetensors"
+link_if_present \
+  "${MODEL_ROOT}/models/vae/LTX23_audio_vae_bf16.safetensors" \
+  "${MODEL_ROOT}/models/diffusion_models/LTX23_audio_vae_bf16.safetensors"
+link_if_present \
+  "${MODEL_ROOT}/models/vae/LTX23_video_vae_bf16.safetensors" \
+  "${MODEL_ROOT}/models/checkpoints/LTX23_video_vae_bf16.safetensors"
+
 if [[ "${RUN_DEP_CHECK:-0}" == "1" ]]; then
   "${PYTHON_BIN}" /opt/runpod-ltx/scripts/check_env.py --comfyui-dir "${COMFYUI_DIR}" --model-root "${MODEL_ROOT}"
 fi
