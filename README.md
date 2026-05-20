@@ -52,8 +52,6 @@ Important real paths:
 Startup also creates compatibility symlinks for node dropdowns:
 
 ```text
-models/checkpoints/10Eros_v1_fp8_transformer.safetensors
-models/unet/10Eros_v1_fp8_transformer.safetensors
 models/checkpoints/LTX23_audio_vae_bf16.safetensors
 models/diffusion_models/LTX23_audio_vae_bf16.safetensors
 models/checkpoints/LTX23_video_vae_bf16.safetensors
@@ -85,4 +83,4 @@ Replace the missing `LoadImage` input with your own image.
 
 ## Notes
 
-The required `10Eros_v1_fp8_transformer.safetensors` file is huge. First boot can still take a long time. Later boots reuse `/workspace/comfyui/models` and skip existing files.
+The required `10Eros_v1-fp8mixed_learned.safetensors` checkpoint is huge. First boot can still take a long time. Later boots reuse `/workspace/comfyui/models` and skip existing files.

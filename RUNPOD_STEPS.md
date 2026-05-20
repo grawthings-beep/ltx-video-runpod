@@ -70,7 +70,7 @@ COMFYUI_ARGS=--reserve-vram 5
 First boot downloads large files. This can still be long:
 
 ```text
-10Eros_v1_fp8_transformer.safetensors    ~29.6 GB
+10Eros_v1-fp8mixed_learned.safetensors   ~29.2 GB
 gemma_3_12B_it_fp4_mixed.safetensors     ~9.45 GB
 ```
 

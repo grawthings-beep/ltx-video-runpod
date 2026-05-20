@@ -1956,7 +1956,7 @@
         "secondTabWidth": 65
       },
       "widgets_values": [
-        "10Eros_v1_fp8_transformer.safetensors"
+        "10Eros_v1-fp8mixed_learned.safetensors"
       ]
     },
     {
@@ -2420,7 +2420,7 @@
       },
       "widgets_values": [
         "gemma_3_12B_it_fp4_mixed.safetensors",
-        "10Eros_v1_fp8_transformer.safetensors",
+        "10Eros_v1-fp8mixed_learned.safetensors",
         "default"
       ]
     },

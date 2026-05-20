@@ -1,10 +1,11 @@
 {
   "models": [
     {
-      "name": "10Eros transformer fp8",
+      "name": "10Eros fp8mixed learned checkpoint",
       "enabled": true,
-      "url": "https://huggingface.co/TenStrip/LTX2.3-10Eros/resolve/main/10Eros_v1_fp8_transformer.safetensors?download=true",
-      "path": "models/diffusion_models/10Eros_v1_fp8_transformer.safetensors",
+      "url": "https://huggingface.co/TenStrip/LTX2.3-10Eros/resolve/main/10Eros_v1-fp8mixed_learned.safetensors?download=true",
+      "path": "models/checkpoints/10Eros_v1-fp8mixed_learned.safetensors",
+      "sha256": "5c00038d4f1527e9842a832eb35192990de410ed2dd722c70aaf0f23cb3c9fd6",
       "headers": {
         "Authorization": "Bearer ${HF_TOKEN}"
       }

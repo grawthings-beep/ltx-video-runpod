@@ -102,12 +102,6 @@ link_if_present() {
 
 # Compatibility aliases for LTX nodes whose dropdowns read different model folders.
 link_if_present \
-  "${MODEL_ROOT}/models/diffusion_models/10Eros_v1_fp8_transformer.safetensors" \
-  "${MODEL_ROOT}/models/checkpoints/10Eros_v1_fp8_transformer.safetensors"
-link_if_present \
-  "${MODEL_ROOT}/models/diffusion_models/10Eros_v1_fp8_transformer.safetensors" \
-  "${MODEL_ROOT}/models/unet/10Eros_v1_fp8_transformer.safetensors"
-link_if_present \
   "${MODEL_ROOT}/models/vae/LTX23_audio_vae_bf16.safetensors" \
   "${MODEL_ROOT}/models/checkpoints/LTX23_audio_vae_bf16.safetensors"
 link_if_present \
