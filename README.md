@@ -26,13 +26,14 @@ LISTEN=0.0.0.0
 RUN_DEP_CHECK=0
 DOWNLOAD_MODELS=1
 HF_TOKEN={{ RUNPOD_SECRET_HF_TOKEN }}
+CIVITAI_TOKEN={{ RUNPOD_SECRET_CIVITAI_TOKEN }}
 MODEL_MANIFEST_URL=https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO/main/config/ltx-video-models.json
 ARIA2_CONNECTIONS=16
 ARIA2_SPLITS=16
 COMFYUI_ARGS=--reserve-vram 5
 ```
 
-Use a RunPod Secret for `HF_TOKEN`. Do not paste the token directly into a public template.
+Use RunPod Secrets for `HF_TOKEN` and `CIVITAI_TOKEN`. Do not paste tokens directly into a public template.
 
 ## Model Storage
 
@@ -47,6 +48,7 @@ Important real paths:
 /workspace/comfyui/models/vae
 /workspace/comfyui/models/latent_upscale_models
 /workspace/comfyui/models/loras/ltx23
+/workspace/comfyui/models/loras/civitai
 ```
 
 Startup also creates compatibility symlinks for node dropdowns:

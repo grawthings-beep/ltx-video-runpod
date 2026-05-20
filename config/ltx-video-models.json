@@ -83,6 +83,36 @@
       }
     },
     {
+      "name": "Civitai LTX 2.3 Phut hon LoRA",
+      "enabled": true,
+      "required": false,
+      "method": "curl",
+      "use_aria2": false,
+      "min_bytes": 1048576,
+      "url": "https://civitai.com/api/download/models/2806861?type=Model&format=SafeTensor&token=${CIVITAI_TOKEN}",
+      "path": "models/loras/civitai/ltx23_phut_hon_civitai_2806861.safetensors"
+    },
+    {
+      "name": "Civitai SmoothMix Animations LTX LoRA",
+      "enabled": true,
+      "required": false,
+      "method": "curl",
+      "use_aria2": false,
+      "min_bytes": 1048576,
+      "url": "https://civitai.com/api/download/models/2911845?type=Model&format=SafeTensor&token=${CIVITAI_TOKEN}",
+      "path": "models/loras/civitai/smoothmix_animations_ltx_civitai_2911845.safetensors"
+    },
+    {
+      "name": "Civitai LTX LoRA 2849892",
+      "enabled": true,
+      "required": false,
+      "method": "curl",
+      "use_aria2": false,
+      "min_bytes": 1048576,
+      "url": "https://civitai.com/api/download/models/2849892?type=Model&format=SafeTensor&token=${CIVITAI_TOKEN}",
+      "path": "models/loras/civitai/civitai_2849892.safetensors"
+    },
+    {
       "name": "Optional reasoning I2V LoRA",
       "enabled": false,
       "required": false,

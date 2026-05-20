@@ -30,6 +30,7 @@ mkdir -p "${WORKSPACE_DIR}/input" \
          "${MODEL_ROOT}/models/diffusion_models" \
          "${MODEL_ROOT}/models/embeddings" \
          "${MODEL_ROOT}/models/latent_upscale_models" \
+         "${MODEL_ROOT}/models/loras/civitai" \
          "${MODEL_ROOT}/models/loras/ltx23" \
          "${MODEL_ROOT}/models/style_models" \
          "${MODEL_ROOT}/models/text_encoders" \

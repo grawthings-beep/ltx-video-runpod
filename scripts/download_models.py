@@ -7,7 +7,6 @@ import pathlib
 import shutil
 import subprocess
 import sys
-import tempfile
 import urllib.request
 
 
@@ -76,6 +75,32 @@ def run_aria2(url, output, connections, splits):
     subprocess.run(cmd, check=True)
 
 
+def run_curl(url, output, headers):
+    output.parent.mkdir(parents=True, exist_ok=True)
+    tmp = output.with_suffix(output.suffix + ".tmp")
+    if tmp.exists():
+        tmp.unlink()
+
+    cmd = [
+        "curl",
+        "-fL",
+        "--retry",
+        "5",
+        "--retry-delay",
+        "3",
+        "--retry-all-errors",
+        "-A",
+        headers.get("User-Agent", "Mozilla/5.0"),
+    ]
+    for key, value in headers.items():
+        if key.lower() == "user-agent":
+            continue
+        cmd.extend(["-H", f"{key}: {value}"])
+    cmd.extend(["-o", str(tmp), url])
+    subprocess.run(cmd, check=True)
+    tmp.replace(output)
+
+
 def run_urllib(url, output, headers):
     output.parent.mkdir(parents=True, exist_ok=True)
     tmp = output.with_suffix(output.suffix + ".tmp")
@@ -91,11 +116,16 @@ def download(entry, root, use_aria2, connections, splits):
     url = entry["url"]
     output = root / entry["path"]
     expected_sha = (entry.get("sha256") or "").upper()
+    min_bytes = int(entry.get("min_bytes") or 0)
     required = entry.get("required", True)
     headers = cleaned_headers(entry.get("headers"))
+    method = str(entry.get("method") or "").lower()
 
     if output.exists() and output.stat().st_size > 0:
-        if expected_sha:
+        if min_bytes and output.stat().st_size < min_bytes:
+            print(f"Too small, redownloading: {name}", file=sys.stderr)
+            output.unlink()
+        elif expected_sha:
             actual_sha = sha256_file(output)
             if actual_sha == expected_sha:
                 print(f"OK existing: {name}")
@@ -108,12 +138,16 @@ def download(entry, root, use_aria2, connections, splits):
 
     try:
         print(f"DOWNLOAD: {name}")
-        if use_aria2 and shutil.which("aria2c"):
+        if method == "curl" and shutil.which("curl"):
+            run_curl(url, output, headers)
+        elif use_aria2 and entry.get("use_aria2", True) and shutil.which("aria2c"):
             final_url = resolve_download_url(url, headers)
             run_aria2(final_url, output, connections, splits)
         else:
             run_urllib(url, output, headers)
 
+        if min_bytes and output.stat().st_size < min_bytes:
+            raise RuntimeError(f"downloaded file is too small for {output.name}: {output.stat().st_size} bytes")
         if expected_sha:
             actual_sha = sha256_file(output)
             if actual_sha != expected_sha:
