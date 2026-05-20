@@ -86,6 +86,9 @@
       "name": "Civitai LTX 2.3 Phut hon LoRA",
       "enabled": true,
       "required": false,
+      "requires_env": [
+        "CIVITAI_TOKEN"
+      ],
       "method": "curl",
       "use_aria2": false,
       "min_bytes": 1048576,
@@ -96,6 +99,9 @@
       "name": "Civitai SmoothMix Animations LTX LoRA",
       "enabled": true,
       "required": false,
+      "requires_env": [
+        "CIVITAI_TOKEN"
+      ],
       "method": "curl",
       "use_aria2": false,
       "min_bytes": 1048576,
@@ -106,6 +112,9 @@
       "name": "Civitai LTX LoRA 2849892",
       "enabled": true,
       "required": false,
+      "requires_env": [
+        "CIVITAI_TOKEN"
+      ],
       "method": "curl",
       "use_aria2": false,
       "min_bytes": 1048576,

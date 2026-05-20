@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -18,6 +19,21 @@ def expand(value):
     if isinstance(value, dict):
         return {k: expand(v) for k, v in value.items()}
     return value
+
+
+def has_unresolved_template(value):
+    if not isinstance(value, str):
+        return False
+    return bool(re.search(r"\{\{.+?\}\}|\$\{[A-Za-z_][A-Za-z0-9_]*\}|\$[A-Za-z_][A-Za-z0-9_]*", value))
+
+
+def missing_required_env(names):
+    missing = []
+    for name in names or []:
+        value = os.environ.get(str(name), "").strip()
+        if not value or has_unresolved_template(value):
+            missing.append(str(name))
+    return missing
 
 
 def cleaned_headers(raw):
@@ -120,6 +136,24 @@ def download(entry, root, use_aria2, connections, splits):
     required = entry.get("required", True)
     headers = cleaned_headers(entry.get("headers"))
     method = str(entry.get("method") or "").lower()
+    missing_env = missing_required_env(entry.get("requires_env"))
+    if missing_env:
+        message = f"missing required env for {name}: {', '.join(missing_env)}"
+        if required:
+            raise RuntimeError(message)
+        print(f"WARN optional model skipped: {message}", file=sys.stderr)
+        if output.exists() and min_bytes and output.stat().st_size < min_bytes:
+            output.unlink()
+        return
+
+    if has_unresolved_template(url):
+        message = f"unresolved template in url for {name}"
+        if required:
+            raise RuntimeError(message)
+        print(f"WARN optional model skipped: {message}", file=sys.stderr)
+        if output.exists() and min_bytes and output.stat().st_size < min_bytes:
+            output.unlink()
+        return
 
     if output.exists() and output.stat().st_size > 0:
         if min_bytes and output.stat().st_size < min_bytes:
@@ -153,6 +187,11 @@ def download(entry, root, use_aria2, connections, splits):
             if actual_sha != expected_sha:
                 raise RuntimeError(f"sha256 mismatch for {output.name}: expected {expected_sha}, got {actual_sha}")
     except Exception as exc:
+        tmp = output.with_suffix(output.suffix + ".tmp")
+        if tmp.exists():
+            tmp.unlink()
+        if output.exists():
+            output.unlink()
         if required:
             raise
         print(f"WARN optional model failed: {name}: {exc}", file=sys.stderr)
