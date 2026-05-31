@@ -9,6 +9,35 @@ import shutil
 import subprocess
 import sys
 import urllib.request
+import zipfile
+
+
+def extract_archive(archive, dest_dir, what):
+    """Extract members of a zip into dest_dir (flattened to basenames).
+
+    `what` selects which members to keep: a comma-separated extension list
+    (e.g. "pt" or "pt,safetensors") or a truthy value ("all"/"*"/True) for
+    everything. Subdirectories in the archive are flattened. The archive is
+    removed afterwards. Returns the list of extracted filenames.
+    """
+    exts = None
+    if isinstance(what, str) and what.strip().lower() not in ("", "1", "true", "all", "*"):
+        exts = {"." + e.strip().lstrip(".").lower() for e in what.split(",") if e.strip()}
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    extracted = []
+    with zipfile.ZipFile(archive) as zf:
+        for member in zf.namelist():
+            base = os.path.basename(member)
+            if not base or member.endswith("/"):
+                continue
+            if exts and os.path.splitext(base)[1].lower() not in exts:
+                continue
+            target = dest_dir / base
+            with zf.open(member) as src, open(target, "wb") as dst:
+                shutil.copyfileobj(src, dst, length=1024 * 1024 * 8)
+            extracted.append(base)
+    archive.unlink()
+    return extracted
 
 
 def expand(value):
@@ -136,6 +165,8 @@ def download(entry, root, use_aria2, connections, splits):
     required = entry.get("required", True)
     headers = cleaned_headers(entry.get("headers"))
     method = str(entry.get("method") or "").lower()
+    extract = entry.get("extract")
+    sentinel = output.parent / ("." + output.name + ".extracted")
     missing_env = missing_required_env(entry.get("requires_env"))
     if missing_env:
         message = f"missing required env for {name}: {', '.join(missing_env)}"
@@ -155,6 +186,10 @@ def download(entry, root, use_aria2, connections, splits):
             output.unlink()
         return
 
+    if extract and sentinel.exists():
+        print(f"OK extracted: {name}")
+        return
+
     if output.exists() and output.stat().st_size > 0:
         if min_bytes and output.stat().st_size < min_bytes:
             print(f"Too small, redownloading: {name}", file=sys.stderr)
@@ -166,7 +201,7 @@ def download(entry, root, use_aria2, connections, splits):
                 return
             print(f"SHA mismatch, redownloading: {name}", file=sys.stderr)
             output.unlink()
-        else:
+        elif not extract:
             print(f"SKIP existing: {name}")
             return
 
@@ -186,6 +221,12 @@ def download(entry, root, use_aria2, connections, splits):
             actual_sha = sha256_file(output)
             if actual_sha != expected_sha:
                 raise RuntimeError(f"sha256 mismatch for {output.name}: expected {expected_sha}, got {actual_sha}")
+        if extract:
+            names = extract_archive(output, output.parent, extract)
+            if not names:
+                raise RuntimeError(f"no matching files extracted from {output.name}")
+            sentinel.write_text("\n".join(names))
+            print(f"EXTRACTED ({name}): {', '.join(names)}")
     except Exception as exc:
         tmp = output.with_suffix(output.suffix + ".tmp")
         if tmp.exists():

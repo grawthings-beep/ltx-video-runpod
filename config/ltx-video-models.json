@@ -130,6 +130,28 @@
       "headers": {
         "Authorization": "Bearer ${HF_TOKEN}"
       }
+    },
+    {
+      "name": "Anime NSFW Detection v5.0 (auto-mosaic seed detector)",
+      "enabled": true,
+      "required": false,
+      "requires_env": [
+        "CIVITAI_TOKEN"
+      ],
+      "method": "curl",
+      "use_aria2": false,
+      "min_bytes": 1048576,
+      "extract": "pt",
+      "url": "https://civitai.com/api/download/models/2266294?token=${CIVITAI_TOKEN}",
+      "path": "models/ultralytics/segm/anime_nsfw_v50.zip"
+    },
+    {
+      "name": "SAM2.1 Hiera base_plus (video mask propagation)",
+      "enabled": true,
+      "required": false,
+      "min_bytes": 1048576,
+      "url": "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_base_plus.pt",
+      "path": "models/sams/sam2.1_hiera_base_plus.pt"
     }
   ]
 }

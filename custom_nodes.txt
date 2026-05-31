@@ -7,3 +7,5 @@ ComfyUI-LTXVideo|https://github.com/Lightricks/ComfyUI-LTXVideo.git
 RES4LYF|https://github.com/ClownsharkBatwing/RES4LYF.git
 ComfyUI-Custom-Scripts|https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git
 ComfyUI-KJNodes|https://github.com/kijai/ComfyUI-KJNodes.git
+ComfyUI-Impact-Pack|https://github.com/ltdrdata/ComfyUI-Impact-Pack.git
+ComfyUI-Impact-Subpack|https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git
