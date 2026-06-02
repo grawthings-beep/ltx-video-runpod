@@ -10,6 +10,7 @@ import subprocess
 import sys
 import urllib.request
 import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 def extract_archive(archive, dest_dir, what):
@@ -106,9 +107,13 @@ def run_aria2(url, output, connections, splits):
         str(splits),
         "-k",
         "1M",
+        "--min-split-size=1M",
         "--continue=true",
         "--allow-overwrite=true",
         "--auto-file-renaming=false",
+        "--file-allocation=none",
+        "--max-tries=5",
+        "--retry-wait=3",
         "--summary-interval=10",
         "--console-log-level=warn",
         "-d",
@@ -245,15 +250,45 @@ def main():
     parser.add_argument("--no-aria2", action="store_true")
     parser.add_argument("--connections", type=int, default=int(os.environ.get("ARIA2_CONNECTIONS", "16")))
     parser.add_argument("--splits", type=int, default=int(os.environ.get("ARIA2_SPLITS", "16")))
+    parser.add_argument("--jobs", type=int, default=int(os.environ.get("DOWNLOAD_JOBS", "4")))
     args = parser.parse_args()
 
     root = pathlib.Path(args.root)
     manifest = json.loads(pathlib.Path(args.manifest).read_text(encoding="utf-8"))
+
+    entries = []
     for entry in manifest.get("models", []):
         if not entry.get("enabled", True):
             print(f"SKIP disabled: {entry.get('name') or entry.get('path')}")
             continue
-        download(entry, root, not args.no_aria2, args.connections, args.splits)
+        entries.append(entry)
+
+    jobs = max(1, args.jobs)
+    if jobs == 1 or len(entries) <= 1:
+        for entry in entries:
+            download(entry, root, not args.no_aria2, args.connections, args.splits)
+        return
+
+    print(f"Downloading {len(entries)} models with up to {jobs} parallel jobs "
+          f"(aria2c -x{args.connections} -s{args.splits} each)")
+    errors = []
+    with ThreadPoolExecutor(max_workers=jobs) as executor:
+        futures = {
+            executor.submit(download, entry, root, not args.no_aria2, args.connections, args.splits): (
+                entry.get("name") or entry.get("path")
+            )
+            for entry in entries
+        }
+        for future in as_completed(futures):
+            name = futures[future]
+            try:
+                future.result()
+            except Exception as exc:
+                errors.append(name)
+                print(f"ERROR required model failed: {name}: {exc}", file=sys.stderr)
+
+    if errors:
+        raise SystemExit(f"failed to download required models: {', '.join(errors)}")
 
 
 if __name__ == "__main__":
