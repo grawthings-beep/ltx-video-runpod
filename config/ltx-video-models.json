@@ -122,11 +122,21 @@
       "path": "models/loras/civitai/civitai_2849892.safetensors"
     },
     {
-      "name": "Optional reasoning I2V LoRA",
-      "enabled": false,
+      "name": "Reasoning I2V V3 LoRA (uwgm)",
+      "enabled": true,
       "required": false,
-      "url": "https://huggingface.co/VixenQuest/ltx2.3/resolve/main/LTX2.3_reasoning_I2V_V3.safetensors?download=true",
+      "url": "https://huggingface.co/uwgm/nikke-loras/resolve/main/LTX2.3_reasoning_I2V_V3.safetensors?download=true",
       "path": "models/loras/ltx23/LTX2.3_reasoning_I2V_V3.safetensors",
+      "headers": {
+        "Authorization": "Bearer ${HF_TOKEN}"
+      }
+    },
+    {
+      "name": "NSFW riding backshot/frontshot LTX2.3 v1.0 (uwgm)",
+      "enabled": true,
+      "required": false,
+      "url": "https://huggingface.co/uwgm/nikke-loras/resolve/main/nsfw_riding_backshot_frontshot_ltx23_v1.0.safetensors?download=true",
+      "path": "models/loras/ltx23/nsfw_riding_backshot_frontshot_ltx23_v1.0.safetensors",
       "headers": {
         "Authorization": "Bearer ${HF_TOKEN}"
       }
