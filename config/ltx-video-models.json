@@ -132,6 +132,16 @@
       }
     },
     {
+      "name": "Latexturn 10Eros I2V v0.5 LoRA (uwgm)",
+      "enabled": true,
+      "required": false,
+      "url": "https://huggingface.co/uwgm/nikke-loras/resolve/main/latexturn_10Eros_i2v_v0.5.safetensors?download=true",
+      "path": "models/loras/ltx23/latexturn_10Eros_i2v_v0.5.safetensors",
+      "headers": {
+        "Authorization": "Bearer ${HF_TOKEN}"
+      }
+    },
+    {
       "name": "NSFW riding backshot/frontshot LTX2.3 v1.0 (uwgm)",
       "enabled": true,
       "required": false,
