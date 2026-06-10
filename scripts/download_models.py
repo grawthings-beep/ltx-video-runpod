@@ -10,6 +10,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -191,6 +192,55 @@ def resolve_download_url(url, headers, timeout=90):
         response.close()
 
 
+def parse_huggingface_url(url):
+    parsed = urllib.parse.urlparse(url)
+    if parsed.hostname not in {"huggingface.co", "www.huggingface.co"}:
+        return None
+
+    parts = parsed.path.strip("/").split("/")
+    if len(parts) < 5 or parts[2] != "resolve":
+        return None
+
+    repo_id = "/".join(parts[:2])
+    revision = urllib.parse.unquote(parts[3])
+    filename = urllib.parse.unquote("/".join(parts[4:]))
+    if not repo_id or not revision or not filename:
+        return None
+    return repo_id, revision, filename
+
+
+def bearer_token(headers):
+    authorization = headers.get("Authorization", "")
+    if authorization.lower().startswith("bearer "):
+        return authorization.split(" ", 1)[1].strip() or None
+    return None
+
+
+def run_hf_hub(url, output, headers):
+    from huggingface_hub import hf_hub_download
+
+    parsed = parse_huggingface_url(url)
+    if not parsed:
+        raise ValueError(f"not a supported Hugging Face resolve URL: {url}")
+
+    repo_id, revision, filename = parsed
+    output.parent.mkdir(parents=True, exist_ok=True)
+    log(f"HF_XET: {repo_id}/{filename} (revision {revision})")
+    downloaded = pathlib.Path(
+        hf_hub_download(
+            repo_id=repo_id,
+            filename=filename,
+            revision=revision,
+            local_dir=str(output.parent),
+            token=bearer_token(headers),
+        )
+    )
+
+    if downloaded.resolve() != output.resolve():
+        output.parent.mkdir(parents=True, exist_ok=True)
+        downloaded.replace(output)
+
+
 def partial_path(output):
     return output.with_name(output.name + ".part")
 
@@ -348,14 +398,35 @@ def download(entry, root, use_aria2, connections, splits, verify_hashes):
 
     try:
         log(f"DOWNLOAD: {name}")
+        download_started = time.monotonic()
         if method == "curl" and shutil.which("curl"):
             run_curl(url, output, headers)
+        elif method in {"", "auto", "hf", "huggingface"} and parse_huggingface_url(url):
+            try:
+                run_hf_hub(url, output, headers)
+            except Exception as exc:
+                log(
+                    f"WARN hf_xet failed for {name}; falling back to aria2c: {exc}",
+                    error=True,
+                )
+                if use_aria2 and shutil.which("aria2c"):
+                    final_url = resolve_download_url(url, headers)
+                    run_aria2(final_url, output, connections, splits)
+                else:
+                    run_urllib(url, output, headers)
         elif use_aria2 and entry.get("use_aria2", True) and shutil.which("aria2c"):
             final_url = resolve_download_url(url, headers)
             run_aria2(final_url, output, connections, splits)
         else:
             run_urllib(url, output, headers)
 
+        elapsed = max(time.monotonic() - download_started, 0.001)
+        size = output.stat().st_size
+        speed = size / elapsed / (1024 ** 2)
+        log(
+            f"DOWNLOADED: {name} ({size / (1024 ** 3):.2f} GiB in "
+            f"{elapsed:.1f}s, average {speed:.1f} MiB/s)"
+        )
         if min_bytes and output.stat().st_size < min_bytes:
             raise RuntimeError(f"downloaded file is too small for {output.name}: {output.stat().st_size} bytes")
         if expected_sha:
@@ -383,7 +454,7 @@ def main():
     parser.add_argument("--no-aria2", action="store_true")
     parser.add_argument("--connections", type=int, default=int(os.environ.get("ARIA2_CONNECTIONS", "8")))
     parser.add_argument("--splits", type=int, default=int(os.environ.get("ARIA2_SPLITS", "8")))
-    parser.add_argument("--jobs", type=int, default=int(os.environ.get("DOWNLOAD_JOBS", "3")))
+    parser.add_argument("--jobs", type=int, default=int(os.environ.get("DOWNLOAD_JOBS", "1")))
     parser.add_argument(
         "--verify-hashes",
         choices=("once", "always", "never"),

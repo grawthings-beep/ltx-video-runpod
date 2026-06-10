@@ -62,9 +62,11 @@ MODEL_DOWNLOAD_MODE=background
 HF_TOKEN={{ RUNPOD_SECRET_HF_TOKEN }}
 CIVITAI_TOKEN={{ RUNPOD_SECRET_CIVITAI_TOKEN }}
 MODEL_MANIFEST_URL=https://raw.githubusercontent.com/YOUR_GITHUB_USER/ltx-video-runpod/main/config/ltx-video-models.json
+HF_XET_HIGH_PERFORMANCE=1
+HF_HUB_DOWNLOAD_TIMEOUT=120
 ARIA2_CONNECTIONS=8
 ARIA2_SPLITS=8
-DOWNLOAD_JOBS=3
+DOWNLOAD_JOBS=1
 VERIFY_MODEL_HASHES=once
 COMFYUI_ARGS=--reserve-vram 5
 ```
@@ -92,6 +94,8 @@ Wait for `complete`, then refresh ComfyUI before loading the workflow. To preser
 ```text
 MODEL_DOWNLOAD_MODE=blocking
 ```
+
+Hugging Face files use `hf_xet` high-performance mode. For the shortest future cold starts, keep the completed `/workspace` Network Volume and attach it to later Pods. You can also pre-populate a supported Network Volume through RunPod's S3-compatible API before launching a GPU Pod.
 
 ## 5. Load Workflow
 

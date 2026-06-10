@@ -2,7 +2,7 @@
 
 RunPod Community Cloud template for an LTX 2.3 I2V ComfyUI workflow.
 
-This image bakes ComfyUI custom nodes and `aria2c` into Docker. Large model files are downloaded to `/workspace/comfyui/models` at Pod startup so a persistent volume can reuse them across restarts. By default the downloader runs in the background, so ComfyUI can open while the first model download is still running.
+This image bakes ComfyUI custom nodes, Hugging Face `hf_xet`, and `aria2c` into Docker. Hugging Face files use the Hub's Xet transfer path; other hosts use resumable curl/aria2 downloads. Large model files are stored in `/workspace/comfyui/models` so a persistent volume can reuse them across restarts. By default the downloader runs in the background, so ComfyUI can open while the first model download is still running.
 
 ## RunPod Template
 
@@ -29,9 +29,11 @@ MODEL_DOWNLOAD_MODE=background
 HF_TOKEN={{ RUNPOD_SECRET_HF_TOKEN }}
 CIVITAI_TOKEN={{ RUNPOD_SECRET_CIVITAI_TOKEN }}
 MODEL_MANIFEST_URL=https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO/main/config/ltx-video-models.json
+HF_XET_HIGH_PERFORMANCE=1
+HF_HUB_DOWNLOAD_TIMEOUT=120
 ARIA2_CONNECTIONS=8
 ARIA2_SPLITS=8
-DOWNLOAD_JOBS=3
+DOWNLOAD_JOBS=1
 VERIFY_MODEL_HASHES=once
 COMFYUI_ARGS=--reserve-vram 5
 ```
@@ -58,6 +60,23 @@ tail -f /workspace/comfyui/logs/model-download.log
 Downloads are written to `*.part` and atomically renamed when complete. Interrupted aria2 downloads are resumed on the next Pod start instead of being mistaken for complete model files.
 
 `VERIFY_MODEL_HASHES=once` verifies files that have a SHA-256 in the manifest and stores a small verification marker. Later boots skip rereading the entire file unless its size or modification time changes.
+
+### Fastest download options
+
+For direct Hugging Face downloads, the image uses `hf_xet` with `HF_XET_HIGH_PERFORMANCE=1`. This is the current Hugging Face high-performance transfer path and attempts to saturate the machine's network bandwidth and CPU. `DOWNLOAD_JOBS=1` is intentional because Xet already downloads chunks concurrently inside each file.
+
+The equivalent manual command is:
+
+```bash
+HF_XET_HIGH_PERFORMANCE=1 hf download \
+  TenStrip/LTX2.3-10Eros \
+  10Eros_v1-fp8mixed_learned.safetensors \
+  --local-dir /workspace/comfyui/models/checkpoints
+```
+
+Copying the same files into a personal Hugging Face repository normally does not improve speed because it still uses the same Hub storage and transfer backend. It also adds redistribution and license-management concerns.
+
+The fastest repeatable Pod startup is to attach a RunPod Network Volume that already contains the models. RunPod's S3-compatible API can pre-populate the volume without running a GPU Pod; then startup performs no internet model transfer.
 
 ## Model Storage
 

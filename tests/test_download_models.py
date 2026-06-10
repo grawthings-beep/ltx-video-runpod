@@ -1,7 +1,9 @@
 import hashlib
 import importlib.util
 import pathlib
+import sys
 import tempfile
+import types
 import unittest
 from unittest import mock
 
@@ -13,6 +15,44 @@ SPEC.loader.exec_module(download_models)
 
 
 class DownloadModelsTest(unittest.TestCase):
+    def test_parse_huggingface_resolve_url(self):
+        parsed = download_models.parse_huggingface_url(
+            "https://huggingface.co/Comfy-Org/ltx-2/resolve/main/"
+            "split_files/text_encoders/model.safetensors?download=true"
+        )
+
+        self.assertEqual(
+            parsed,
+            (
+                "Comfy-Org/ltx-2",
+                "main",
+                "split_files/text_encoders/model.safetensors",
+            ),
+        )
+
+    def test_hf_hub_download_moves_nested_file_to_requested_output(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = pathlib.Path(temp_dir) / "model.safetensors"
+
+            def fake_download(**kwargs):
+                self.assertEqual(kwargs["repo_id"], "org/repo")
+                self.assertEqual(kwargs["revision"], "main")
+                self.assertEqual(kwargs["filename"], "nested/model.safetensors")
+                nested = pathlib.Path(kwargs["local_dir"]) / kwargs["filename"]
+                nested.parent.mkdir(parents=True)
+                nested.write_bytes(b"xet data")
+                return str(nested)
+
+            fake_module = types.SimpleNamespace(hf_hub_download=fake_download)
+            with mock.patch.dict(sys.modules, {"huggingface_hub": fake_module}):
+                download_models.run_hf_hub(
+                    "https://huggingface.co/org/repo/resolve/main/nested/model.safetensors",
+                    output,
+                    {"Authorization": "Bearer token"},
+                )
+
+            self.assertEqual(output.read_bytes(), b"xet data")
+
     def test_aria2_uses_partial_file_then_renames_atomically(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             output = pathlib.Path(temp_dir) / "model.safetensors"
