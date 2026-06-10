@@ -16,7 +16,7 @@ RUN apt-get update \
         git \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python -m pip install --upgrade \
+RUN python3 -m pip install --upgrade \
         "huggingface_hub>=0.32.0,<1.0" \
         "hf_xet>=1.1.0"
 
