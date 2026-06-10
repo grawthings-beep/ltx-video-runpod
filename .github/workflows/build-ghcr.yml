@@ -16,6 +16,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate startup and downloader scripts
+        run: |
+          bash -n scripts/start.sh scripts/common.sh scripts/install_custom_nodes.sh
+          python3 -m unittest discover -s tests -v
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

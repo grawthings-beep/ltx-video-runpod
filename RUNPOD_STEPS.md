@@ -58,11 +58,14 @@ PORT=8188
 LISTEN=0.0.0.0
 RUN_DEP_CHECK=0
 DOWNLOAD_MODELS=1
+MODEL_DOWNLOAD_MODE=background
 HF_TOKEN={{ RUNPOD_SECRET_HF_TOKEN }}
 CIVITAI_TOKEN={{ RUNPOD_SECRET_CIVITAI_TOKEN }}
 MODEL_MANIFEST_URL=https://raw.githubusercontent.com/YOUR_GITHUB_USER/ltx-video-runpod/main/config/ltx-video-models.json
-ARIA2_CONNECTIONS=16
-ARIA2_SPLITS=16
+ARIA2_CONNECTIONS=8
+ARIA2_SPLITS=8
+DOWNLOAD_JOBS=3
+VERIFY_MODEL_HASHES=once
 COMFYUI_ARGS=--reserve-vram 5
 ```
 
@@ -76,6 +79,19 @@ gemma_3_12B_it_fp4_mixed.safetensors     ~9.45 GB
 ```
 
 After the files are in `/workspace/comfyui/models`, later boots should skip them.
+
+ComfyUI starts before the first download completes. Check readiness in the RunPod terminal:
+
+```bash
+cat /workspace/comfyui/logs/model-download.status
+tail -f /workspace/comfyui/logs/model-download.log
+```
+
+Wait for `complete`, then refresh ComfyUI before loading the workflow. To preserve the old wait-until-ready behavior, set:
+
+```text
+MODEL_DOWNLOAD_MODE=blocking
+```
 
 ## 5. Load Workflow
 
