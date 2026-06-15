@@ -107,6 +107,16 @@ video_ltx23_i2v_first_last_same.json
 
 Replace the missing `LoadImage` file with your own input image.
 
+For the higher-quality two-stage version, select:
+
+```text
+video_ltx23_i2v_first_last_same_2stage_hq.json
+```
+
+The two-stage workflow generates a roughly 0.5-megapixel first pass, performs
+LTX latent x2 spatial upscaling, then runs a four-step refinement pass before
+tiled VAE decode. It is slower and needs more VRAM than the original workflow.
+
 The container installs all bundled JSON workflows into
 `/workspace/comfyui/user/default/workflows` at startup, including the simple and
-perfect-loop variants.
+perfect-loop variants in both one-stage and two-stage form.

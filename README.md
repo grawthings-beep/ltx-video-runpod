@@ -130,14 +130,34 @@ They appear in ComfyUI's **Workflows** list:
 ```text
 video_ltx23_i2v_simple.json
 video_ltx23_i2v_first_last_same.json
+video_ltx23_i2v_simple_2stage_hq.json
+video_ltx23_i2v_first_last_same_2stage_hq.json
 ```
 
 Select `video_ltx23_i2v_first_last_same.json` for the perfect-loop workflow,
 then replace the missing `LoadImage` input with your own image.
 
-Both workflows load `10Eros_v1-fp8mixed_learned.safetensors` as the diffusion
-model, `LTX23_video_vae_bf16.safetensors` for image guides and video decode, and
-`LTX23_audio_vae_bf16.safetensors` for audio latent creation and decode.
+Select a `_2stage_hq` workflow when output quality matters more than minimum
+generation time. These workflows:
+
+- Generate the first pass at about 0.5 megapixels with the existing distilled
+  8-step pipeline.
+- Upscale the stage-one video latent by 2x in each spatial dimension with
+  `ltx-2.3-spatial-upscaler-x2-1.1.safetensors`.
+- Re-apply the source image guide at the higher latent resolution.
+- Run a four-step refinement pass with the official LTX 2.3 distilled sigma
+  schedule used by ComfyUI's two-stage workflow.
+- Decode the roughly 2-megapixel result with tiled VAE decode to reduce the
+  peak VRAM requirement.
+
+The two-stage workflow is substantially slower than the original simple
+workflow and uses more VRAM, but it preserves detail better than applying a
+pixel-space upscaler after video generation.
+
+All bundled workflows load `10Eros_v1-fp8mixed_learned.safetensors` as the
+diffusion model, `LTX23_video_vae_bf16.safetensors` for image guides and video
+decode, and `LTX23_audio_vae_bf16.safetensors` for audio latent creation and
+decode.
 
 It reuses the single `LoadImage` input at frame `0` and frame `-1` (the final
 frame), so the endpoint follows changes to duration and frame rate automatically.
