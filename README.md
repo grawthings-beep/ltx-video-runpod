@@ -161,7 +161,11 @@ decode.
 
 It reuses the single `LoadImage` input at frame `0` and frame `-1` (the final
 frame), so the endpoint follows changes to duration and frame rate automatically.
-Both endpoint guide strengths default to `1.0`.
+The first-frame guide uses `0.9`, matching the simple workflow. The last-frame
+guide is deliberately softer at `0.35` so the image condition does not overpower
+the prompt and LoRAs. In the two-stage loop workflow, the refinement pass uses
+even softer `0.7` and `0.2` endpoint guides to avoid applying the same image
+condition at full strength twice.
 
 After decoding, the workflow also copies decoded frame `0` over frame `-1`
 immediately before `VHS_VideoCombine`. This preserves the frame count and makes

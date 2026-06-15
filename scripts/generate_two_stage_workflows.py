@@ -9,6 +9,7 @@ WORKFLOWS = ROOT / "workflows"
 UPSCALE_MODEL = "ltx-2.3-spatial-upscaler-x2-1.1.safetensors"
 SECOND_STAGE_SIGMAS = "0.85, 0.7250, 0.4219, 0.0"
 FIRST_STAGE_MEGAPIXELS = 0.5
+LOOP_SECOND_STAGE_GUIDE_VALUES = ["2", 0, 0.7, -1, 0.2]
 
 TARGETS = {
     "video_ltx23_i2v_simple.json": "video_ltx23_i2v_simple_2stage_hq.json",
@@ -242,6 +243,8 @@ def add_second_stage(workflow):
         [4440, 5588],
         "2ND PASS: RE-APPLY IMAGE GUIDE",
     )
+    if guide.get("widgets_values", [None])[0] == "2":
+        guide["widgets_values"] = LOOP_SECOND_STAGE_GUIDE_VALUES.copy()
     workflow["nodes"].append(guide)
 
     guider_id = new_node_id(workflow)

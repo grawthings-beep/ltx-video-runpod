@@ -11,6 +11,21 @@ import generate_two_stage_workflows
 
 
 class WorkflowTests(unittest.TestCase):
+    def test_loop_guide_strengths_leave_room_for_prompt_and_loras(self):
+        workflow = json.loads(
+            (
+                ROOT
+                / "workflows"
+                / "video_ltx23_i2v_first_last_same.json"
+            ).read_text(encoding="utf-8")
+        )
+        loop_guide = next(node for node in workflow["nodes"] if node["id"] == 317)
+        self.assertEqual(loop_guide["widgets_values"], ["2", 0, 0.9, -1, 0.35])
+        links = {link[0]: link for link in workflow["links"]}
+        self.assertEqual(links[706][1:5], [254, 0, 343, 0])
+        self.assertEqual(links[707][1:5], [343, 0, 344, 1])
+        self.assertEqual(links[708][1:5], [344, 0, 325, 0])
+
     def test_generated_two_stage_workflows_are_current(self):
         for source_name, output_name in generate_two_stage_workflows.TARGETS.items():
             output = ROOT / "workflows" / output_name
@@ -77,6 +92,35 @@ class WorkflowTests(unittest.TestCase):
                 size_node["widgets_values"][1],
                 generate_two_stage_workflows.FIRST_STAGE_MEGAPIXELS,
             )
+
+            if "first_last_same" in output_name:
+                second_stage_guide = next(
+                    node
+                    for node in nodes.values()
+                    if node.get("title") == "2ND PASS: RE-APPLY IMAGE GUIDE"
+                )
+                self.assertEqual(
+                    second_stage_guide["widgets_values"],
+                    generate_two_stage_workflows.LOOP_SECOND_STAGE_GUIDE_VALUES,
+                )
+                decoded_to_copy = next(
+                    link
+                    for link in links.values()
+                    if link[1:5] == [254, 0, 343, 0]
+                )
+                copy_to_replace = next(
+                    link
+                    for link in links.values()
+                    if link[1:5] == [343, 0, 344, 1]
+                )
+                replace_to_video = next(
+                    link
+                    for link in links.values()
+                    if link[1:5] == [344, 0, 325, 0]
+                )
+                self.assertIsNotNone(decoded_to_copy)
+                self.assertIsNotNone(copy_to_replace)
+                self.assertIsNotNone(replace_to_video)
 
     def test_manifest_contains_two_stage_models(self):
         manifest = json.loads(
