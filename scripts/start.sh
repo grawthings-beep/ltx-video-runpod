@@ -51,6 +51,7 @@ mkdir -p "${WORKSPACE_DIR}/input" \
 
 install_bundled_workflows() {
   local workflow
+  rm -f "${COMFYUI_WORKFLOW_DIR}/video_ltx23_i2v_mosaic.json"
   for workflow in /opt/runpod-ltx/workflows/*.json; do
     [[ -e "${workflow}" ]] || continue
     install -m 0644 "${workflow}" "${COMFYUI_WORKFLOW_DIR}/$(basename "${workflow}")"

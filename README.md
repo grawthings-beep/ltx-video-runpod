@@ -114,6 +114,7 @@ ComfyUI-VideoHelperSuite
 ComfyUI-LTXVideo
 RES4LYF
 ComfyUI-Custom-Scripts
+ComfyUI-KJNodes
 ```
 
 ## Workflow
@@ -128,12 +129,15 @@ They appear in ComfyUI's **Workflows** list:
 
 ```text
 video_ltx23_i2v_simple.json
-video_ltx23_i2v_mosaic.json
 video_ltx23_i2v_first_last_same.json
 ```
 
 Select `video_ltx23_i2v_first_last_same.json` for the perfect-loop workflow,
 then replace the missing `LoadImage` input with your own image.
+
+Both workflows load `10Eros_v1-fp8mixed_learned.safetensors` as the diffusion
+model, `LTX23_video_vae_bf16.safetensors` for image guides and video decode, and
+`LTX23_audio_vae_bf16.safetensors` for audio latent creation and decode.
 
 It reuses the single `LoadImage` input at frame `0` and frame `-1` (the final
 frame), so the endpoint follows changes to duration and frame rate automatically.

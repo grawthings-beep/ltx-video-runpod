@@ -108,5 +108,5 @@ video_ltx23_i2v_first_last_same.json
 Replace the missing `LoadImage` file with your own input image.
 
 The container installs all bundled JSON workflows into
-`/workspace/comfyui/user/default/workflows` at startup, including the simple,
-mosaic, and perfect-loop variants.
+`/workspace/comfyui/user/default/workflows` at startup, including the simple and
+perfect-loop variants.
