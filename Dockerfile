@@ -23,6 +23,7 @@ RUN python3 -m pip install --upgrade \
 COPY custom_nodes.txt /opt/runpod-ltx/custom_nodes.txt
 COPY config/ /opt/runpod-ltx/config/
 COPY scripts/ /opt/runpod-ltx/scripts/
+COPY workflows/ /opt/runpod-ltx/workflows/
 
 RUN chmod +x /opt/runpod-ltx/scripts/*.sh \
     && /opt/runpod-ltx/scripts/install_custom_nodes.sh

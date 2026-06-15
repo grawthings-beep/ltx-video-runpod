@@ -99,10 +99,14 @@ Hugging Face files use `hf_xet` high-performance mode. For the shortest future c
 
 ## 5. Load Workflow
 
-Load this workflow in ComfyUI:
+Open ComfyUI's **Workflows** list and select:
 
 ```text
-workflows/video_ltx23_i2v_simple.json
+video_ltx23_i2v_first_last_same.json
 ```
 
 Replace the missing `LoadImage` file with your own input image.
+
+The container installs all bundled JSON workflows into
+`/workspace/comfyui/user/default/workflows` at startup, including the simple,
+mosaic, and perfect-loop variants.

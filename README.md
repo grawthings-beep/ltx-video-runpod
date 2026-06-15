@@ -118,13 +118,33 @@ ComfyUI-Custom-Scripts
 
 ## Workflow
 
-Load this workflow in ComfyUI:
+Bundled workflows are installed at startup into:
 
 ```text
-workflows/video_ltx23_i2v_simple.json
+/workspace/comfyui/user/default/workflows
 ```
 
-Replace the missing `LoadImage` input with your own image.
+They appear in ComfyUI's **Workflows** list:
+
+```text
+video_ltx23_i2v_simple.json
+video_ltx23_i2v_mosaic.json
+video_ltx23_i2v_first_last_same.json
+```
+
+Select `video_ltx23_i2v_first_last_same.json` for the perfect-loop workflow,
+then replace the missing `LoadImage` input with your own image.
+
+It reuses the single `LoadImage` input at frame `0` and frame `-1` (the final
+frame), so the endpoint follows changes to duration and frame rate automatically.
+Both endpoint guide strengths default to `1.0`.
+
+After decoding, the workflow also copies decoded frame `0` over frame `-1`
+immediately before `VHS_VideoCombine`. This preserves the frame count and makes
+the rendered image sequence close with identical first and last frames.
+
+The ComfyUI user directory lives under `/workspace`, so workflows and UI settings
+persist when that path is backed by a Network Volume.
 
 ## Notes
 

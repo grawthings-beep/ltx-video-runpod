@@ -14,6 +14,8 @@ PYTHON_BIN="$(find_python_bin)" || {
 }
 
 WORKSPACE_DIR="${WORKSPACE_DIR:-/workspace/comfyui}"
+COMFYUI_USER_DIR="${COMFYUI_USER_DIR:-${WORKSPACE_DIR}/user}"
+COMFYUI_WORKFLOW_DIR="${COMFYUI_USER_DIR}/default/workflows"
 MODEL_ROOT="${MODEL_ROOT:-${WORKSPACE_DIR}}"
 CONFIG_DIR="${CONFIG_DIR:-/workspace/config}"
 MODEL_MANIFEST="${MODEL_MANIFEST:-${CONFIG_DIR}/ltx-video-models.json}"
@@ -27,6 +29,7 @@ LISTEN="${LISTEN:-0.0.0.0}"
 
 mkdir -p "${WORKSPACE_DIR}/input" \
          "${WORKSPACE_DIR}/output" \
+         "${COMFYUI_WORKFLOW_DIR}" \
          "${MODEL_DOWNLOAD_LOG_DIR}" \
          "${MODEL_ROOT}/models/checkpoints" \
          "${MODEL_ROOT}/models/clip" \
@@ -45,6 +48,16 @@ mkdir -p "${WORKSPACE_DIR}/input" \
          "${MODEL_ROOT}/models/vae" \
          "${MODEL_ROOT}/models/vae_approx" \
          "${CONFIG_DIR}"
+
+install_bundled_workflows() {
+  local workflow
+  for workflow in /opt/runpod-ltx/workflows/*.json; do
+    [[ -e "${workflow}" ]] || continue
+    install -m 0644 "${workflow}" "${COMFYUI_WORKFLOW_DIR}/$(basename "${workflow}")"
+  done
+}
+
+install_bundled_workflows
 
 write_extra_model_paths() {
   local target="$1"
@@ -201,4 +214,5 @@ exec "${PYTHON_BIN}" main.py \
   --enable-cors-header "${COMFYUI_CORS_ORIGIN:-*}" \
   --input-directory "${WORKSPACE_DIR}/input" \
   --output-directory "${WORKSPACE_DIR}/output" \
+  --user-directory "${COMFYUI_USER_DIR}" \
   ${COMFYUI_ARGS:-}
