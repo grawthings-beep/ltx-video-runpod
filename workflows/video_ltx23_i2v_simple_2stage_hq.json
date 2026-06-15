@@ -680,7 +680,7 @@
           "name": "vae",
           "shape": 7,
           "type": "VAE",
-          "link": 670
+          "link": null
         },
         {
           "name": "preview_rate",
@@ -1314,44 +1314,6 @@
       "bgcolor": "#353"
     },
     {
-      "id": 321,
-      "type": "VAELoader",
-      "pos": [
-        3708.923135552741,
-        5037.19836566551
-      ],
-      "size": [
-        270,
-        58
-      ],
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "links": [
-            670
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.16.1",
-        "Node name for S&R": "VAELoader",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.2.2"
-        }
-      },
-      "widgets_values": [
-        "taeltx2_3.safetensors"
-      ]
-    },
-    {
       "id": 336,
       "type": "MathExpression|pysssss",
       "pos": [
@@ -1594,7 +1556,7 @@
         "save_metadata": false,
         "trim_to_audio": false,
         "pingpong": false,
-        "save_output": false,
+        "save_output": true,
         "videopreview": {
           "hidden": false,
           "paused": false,
@@ -2119,7 +2081,12 @@
         {
           "name": "VAE",
           "type": "VAE",
-          "links": []
+          "links": [
+            600,
+            651,
+            707,
+            710
+          ]
         }
       ],
       "properties": {
@@ -2186,44 +2153,7 @@
         "secondTabWidth": 65
       },
       "widgets_values": [
-        "LTX23_audio_vae_bf16.safetensors"
-      ]
-    },
-    {
-      "id": 351,
-      "type": "VAELoader",
-      "title": "LTX 2.3 VIDEO VAE",
-      "pos": [
-        2168.4620907035337,
-        6239.680893734091
-      ],
-      "size": [
-        270,
-        58
-      ],
-      "flags": {},
-      "order": 8,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "links": [
-            600,
-            651,
-            707,
-            710
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.18.2",
-        "Node name for S&R": "VAELoader"
-      },
-      "widgets_values": [
-        "LTX23_video_vae_bf16.safetensors"
+        "10Eros_v1-fp8mixed_learned.safetensors"
       ]
     },
     {
@@ -3209,8 +3139,8 @@
     ],
     [
       600,
-      351,
-      0,
+      293,
+      2,
       311,
       0,
       "VAE"
@@ -3353,8 +3283,8 @@
     ],
     [
       651,
-      351,
-      0,
+      293,
+      2,
       317,
       2,
       "VAE"
@@ -3422,14 +3352,6 @@
       298,
       1,
       "CONDITIONING"
-    ],
-    [
-      670,
-      321,
-      0,
-      320,
-      2,
-      "VAE"
     ],
     [
       672,
@@ -3625,8 +3547,8 @@
     ],
     [
       707,
-      351,
-      0,
+      293,
+      2,
       353,
       2,
       "VAE"
@@ -3649,8 +3571,8 @@
     ],
     [
       710,
-      351,
-      0,
+      293,
+      2,
       354,
       2,
       "VAE"

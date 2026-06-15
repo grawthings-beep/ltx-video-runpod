@@ -94,14 +94,6 @@ Important real paths:
 /workspace/comfyui/models/loras/civitai
 ```
 
-Startup also creates compatibility symlinks for node dropdowns:
-
-```text
-models/checkpoints/LTX23_audio_vae_bf16.safetensors
-models/diffusion_models/LTX23_audio_vae_bf16.safetensors
-models/checkpoints/LTX23_video_vae_bf16.safetensors
-```
-
 ## Custom Nodes
 
 Installed during Docker build:
@@ -154,10 +146,16 @@ The two-stage workflow is substantially slower than the original simple
 workflow and uses more VRAM, but it preserves detail better than applying a
 pixel-space upscaler after video generation.
 
-All bundled workflows load `10Eros_v1-fp8mixed_learned.safetensors` as the
-diffusion model, `LTX23_video_vae_bf16.safetensors` for image guides and video
-decode, and `LTX23_audio_vae_bf16.safetensors` for audio latent creation and
-decode.
+All bundled workflows load `10Eros_v1-fp8mixed_learned.safetensors` as a full
+checkpoint. Its bundled video VAE is used for image guides and video decode,
+and `LTXVAudioVAELoader` reads the bundled audio VAE from the same checkpoint.
+This matches the model author's workflow instead of mixing in VAE files from a
+different split-model distribution.
+
+The sampling preview override uses its built-in LTX 2.3 latent-to-RGB preview.
+The optional TAE preview VAE is deliberately left disconnected because it can
+produce an all-black progress preview on some ComfyUI/KJNodes combinations.
+This preview setting does not change the final VAE decode.
 
 It reuses the single `LoadImage` input at frame `0` and frame `-1` (the final
 frame), so the endpoint follows changes to duration and frame rate automatically.
@@ -170,6 +168,14 @@ condition at full strength twice.
 After decoding, the workflow also copies decoded frame `0` over frame `-1`
 immediately before `VHS_VideoCombine`. This preserves the frame count and makes
 the rendered image sequence close with identical first and last frames.
+
+`VHS_VideoCombine` saves completed videos under
+`/workspace/comfyui/output` by default. The image also installs system ffmpeg
+explicitly instead of relying on whichever ffmpeg happens to be present in the
+base image.
+
+The RunPod ComfyUI base image and every custom-node revision are pinned so a
+rebuild does not silently change the runtime.
 
 The ComfyUI user directory lives under `/workspace`, so workflows and UI settings
 persist when that path is backed by a Network Volume.

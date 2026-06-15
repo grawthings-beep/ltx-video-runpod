@@ -117,26 +117,6 @@ elif [[ ! -f "${MODEL_MANIFEST}" && -f /opt/runpod-ltx/config/ltx-video-models.j
   cp /opt/runpod-ltx/config/ltx-video-models.json "${MODEL_MANIFEST}"
 fi
 
-link_model_alias() {
-  local source="$1"
-  local target="$2"
-  mkdir -p "$(dirname "${target}")"
-  ln -sfn "${source}" "${target}"
-}
-
-create_model_aliases() {
-  # Compatibility aliases for LTX nodes whose dropdowns read different folders.
-  link_model_alias \
-    "${MODEL_ROOT}/models/vae/LTX23_audio_vae_bf16.safetensors" \
-    "${MODEL_ROOT}/models/checkpoints/LTX23_audio_vae_bf16.safetensors"
-  link_model_alias \
-    "${MODEL_ROOT}/models/vae/LTX23_audio_vae_bf16.safetensors" \
-    "${MODEL_ROOT}/models/diffusion_models/LTX23_audio_vae_bf16.safetensors"
-  link_model_alias \
-    "${MODEL_ROOT}/models/vae/LTX23_video_vae_bf16.safetensors" \
-    "${MODEL_ROOT}/models/checkpoints/LTX23_video_vae_bf16.safetensors"
-}
-
 run_dependency_check() {
   if [[ "${RUN_DEP_CHECK:-0}" == "1" ]]; then
     "${PYTHON_BIN}" /opt/runpod-ltx/scripts/check_env.py \
@@ -156,7 +136,6 @@ run_model_downloads() {
   if "${PYTHON_BIN}" /opt/runpod-ltx/scripts/download_models.py \
     --manifest "${MODEL_MANIFEST}" \
     --root "${MODEL_ROOT}"; then
-    create_model_aliases
     if run_dependency_check; then
       write_download_status "complete"
       echo "Model download completed."
@@ -186,8 +165,6 @@ start_background_downloads() {
   printf '%s\n' "${download_pid}" > "${MODEL_DOWNLOAD_LOG_DIR}/model-download.pid"
   echo "Model download is running in the background (PID ${download_pid})."
 }
-
-create_model_aliases
 
 if [[ "${DOWNLOAD_MODELS:-1}" != "1" || ! -f "${MODEL_MANIFEST}" ]]; then
   echo "Skipping model downloads."

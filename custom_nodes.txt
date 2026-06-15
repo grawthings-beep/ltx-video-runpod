@@ -1,9 +1,9 @@
-# name|git url
-10S_Nodes|https://github.com/TenStrip/10S-Comfy-nodes.git
-rgthree-comfy|https://github.com/rgthree/rgthree-comfy.git
-ComfyMath|https://github.com/evanspearman/ComfyMath.git
-ComfyUI-VideoHelperSuite|https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git
-ComfyUI-LTXVideo|https://github.com/Lightricks/ComfyUI-LTXVideo.git
-RES4LYF|https://github.com/ClownsharkBatwing/RES4LYF.git
-ComfyUI-Custom-Scripts|https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git
-ComfyUI-KJNodes|https://github.com/kijai/ComfyUI-KJNodes.git
+# name|git url|commit
+10S_Nodes|https://github.com/TenStrip/10S-Comfy-nodes.git|fb6edfed97abaf246a826812536eef018d7a1c3b
+rgthree-comfy|https://github.com/rgthree/rgthree-comfy.git|738105af5fb14e96fbecaf406dc356e284797e8c
+ComfyMath|https://github.com/evanspearman/ComfyMath.git|c01177221c31b8e5fbc062778fc8254aeb541638
+ComfyUI-VideoHelperSuite|https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git|4ee72c065db22c9d96c2427954dc69e7b908444b
+ComfyUI-LTXVideo|https://github.com/Lightricks/ComfyUI-LTXVideo.git|229437c6b65796d6a7a63ae34be2bd5ba31fa543
+RES4LYF|https://github.com/ClownsharkBatwing/RES4LYF.git|419de2d7c78f415dde9aa352a7231820ebfc17a4
+ComfyUI-Custom-Scripts|https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git|609f3afaa74b2f88ef9ce8d939626065e3247469
+ComfyUI-KJNodes|https://github.com/kijai/ComfyUI-KJNodes.git|3e80b28dec889b0d082c3bd3aeb0bf30ab6b5ab2

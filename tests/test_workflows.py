@@ -11,6 +11,37 @@ import generate_two_stage_workflows
 
 
 class WorkflowTests(unittest.TestCase):
+    def test_workflows_use_full_checkpoint_vaes_and_save_output(self):
+        for path in (ROOT / "workflows").glob("*.json"):
+            workflow = json.loads(path.read_text(encoding="utf-8"))
+            nodes = {node["id"]: node for node in workflow["nodes"]}
+            links = {link[0]: link for link in workflow["links"]}
+
+            checkpoint = nodes[293]
+            self.assertEqual(
+                checkpoint["widgets_values"][0],
+                "10Eros_v1-fp8mixed_learned.safetensors",
+            )
+            self.assertIn(600, checkpoint["outputs"][2]["links"])
+            self.assertIn(651, checkpoint["outputs"][2]["links"])
+            self.assertEqual(links[600][1:3], [293, 2])
+            self.assertEqual(links[651][1:3], [293, 2])
+
+            audio_vae = nodes[339]
+            self.assertEqual(
+                audio_vae["widgets_values"][0],
+                "10Eros_v1-fp8mixed_learned.safetensors",
+            )
+
+            preview = nodes[320]
+            preview_vae = next(
+                item for item in preview["inputs"] if item["name"] == "vae"
+            )
+            self.assertIsNone(preview_vae["link"])
+
+            video_combine = nodes[325]
+            self.assertTrue(video_combine["widgets_values"]["save_output"])
+
     def test_loop_guide_strengths_leave_room_for_prompt_and_loras(self):
         workflow = json.loads(
             (
@@ -138,8 +169,20 @@ class WorkflowTests(unittest.TestCase):
             + generate_two_stage_workflows.UPSCALE_MODEL,
             paths,
         )
-        self.assertIn("models/vae/LTX23_video_vae_bf16.safetensors", paths)
-        self.assertIn("models/vae/LTX23_audio_vae_bf16.safetensors", paths)
+        self.assertNotIn("models/vae/LTX23_video_vae_bf16.safetensors", paths)
+        self.assertNotIn("models/vae/LTX23_audio_vae_bf16.safetensors", paths)
+
+    def test_custom_nodes_are_pinned(self):
+        lines = (ROOT / "custom_nodes.txt").read_text(
+            encoding="utf-8"
+        ).splitlines()
+        for line in lines:
+            if not line or line.startswith("#"):
+                continue
+            name, url, revision = line.split("|")
+            self.assertTrue(name)
+            self.assertTrue(url.startswith("https://github.com/"))
+            self.assertRegex(revision, r"^[0-9a-f]{40}$")
 
 
 if __name__ == "__main__":

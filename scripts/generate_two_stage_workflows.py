@@ -302,12 +302,12 @@ def add_second_stage(workflow):
     # Crop stage-one guide tokens before latent upscaling.
     add_link(workflow, 315, 2, upsampler, 0, "LATENT")
     add_link(workflow, upscale_loader, 0, upsampler, 1, "LATENT_UPSCALE_MODEL")
-    add_link(workflow, 351, 0, upsampler, 2, "VAE")
+    add_link(workflow, 293, 2, upsampler, 2, "VAE")
 
     # Re-encode the same source guide(s) at the upscaled latent resolution.
     add_link(workflow, 315, 0, guide_id, 0, "CONDITIONING")
     add_link(workflow, 315, 1, guide_id, 1, "CONDITIONING")
-    add_link(workflow, 351, 0, guide_id, 2, "VAE")
+    add_link(workflow, 293, 2, guide_id, 2, "VAE")
     add_link(workflow, upsampler, 0, guide_id, 3, "LATENT")
     source_guide = node_by_id(workflow, 317)
     for target_slot in range(4, len(source_guide["inputs"])):

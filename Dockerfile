@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=runpod/comfyui:latest
+ARG BASE_IMAGE=runpod/comfyui:1.4.1-cuda12.8
 FROM ${BASE_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -13,6 +13,7 @@ RUN apt-get update \
         aria2 \
         ca-certificates \
         curl \
+        ffmpeg \
         git \
     && rm -rf /var/lib/apt/lists/*
 
