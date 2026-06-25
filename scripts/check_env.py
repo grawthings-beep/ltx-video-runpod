@@ -19,6 +19,7 @@ REQUIRED_MODELS = [
     "models/text_encoders/ltx-2.3_text_projection_bf16.safetensors",
     "models/latent_upscale_models/ltx-2.3-spatial-upscaler-x2-1.1.safetensors",
     "models/loras/ltx23/ltx-2.3-22b-distilled-lora-1.1_fro90_ceil72_condsafe.safetensors",
+    "models/loras/ltx23/LTX2.3_reasoning_I2V_V3.safetensors",
     "models/loras/ltx23/ltx23_edit_anything_global_rank128_v1_9000steps_adamw.safetensors",
 ]
 

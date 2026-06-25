@@ -124,6 +124,8 @@ video_ltx23_i2v_simple.json
 video_ltx23_i2v_first_last_same.json
 video_ltx23_i2v_simple_2stage_hq.json
 video_ltx23_i2v_first_last_same_2stage_hq.json
+video_ltx23_i2v_simple_dasiwa_hybrid.json
+video_ltx23_i2v_first_last_same_dasiwa_hybrid.json
 ```
 
 Select `video_ltx23_i2v_first_last_same.json` for the perfect-loop workflow,
@@ -146,11 +148,33 @@ The two-stage workflow is substantially slower than the original simple
 workflow and uses more VRAM, but it preserves detail better than applying a
 pixel-space upscaler after video generation.
 
+Select a `_dasiwa_hybrid` workflow when the 10Eros audio is preferable but the
+video needs the clearer DaSiWa-style treatment. These workflows keep the 10Eros
+checkpoint, text encoder, and audio VAE path intact, then change only the visual
+side:
+
+- Raise the first-pass target from `0.5` MP to `0.83` MP.
+- Increase the image guide longer edge from `1536` to `1920`.
+- Use `ltx-2.3-spatial-upscaler-x2-1.1.safetensors` for latent x2 upscale.
+- Refine the upscaled latent with a DaSiWa-style `BasicScheduler`
+  (`linear_quadratic`, `4` steps, `0.42` denoise).
+- Apply `LTX2.3_reasoning_I2V_V3.safetensors` at strength `1.0`.
+- Reduce the distilled LoRA strength to `0.5`.
+- Save with `crf=16` to preserve more video detail.
+
+The hybrid workflows are heavier than `_2stage_hq`. If VRAM becomes tight,
+fall back to `_2stage_hq` or reduce the `SIZE` node from `0.83` toward `0.65`.
+
 All bundled workflows load `10Eros_v1-fp8mixed_learned.safetensors` as a full
 checkpoint. Its bundled video VAE is used for image guides and video decode,
 and `LTXVAudioVAELoader` reads the bundled audio VAE from the same checkpoint.
 This matches the model author's workflow instead of mixing in VAE files from a
 different split-model distribution.
+
+The DaSiWa RTX post-processing node is not wired into the default workflows
+because it requires NVIDIA RTX VFX / Broadcast SDK support on the host. The
+hybrid workflows focus on portable latent upscaling and refinement so they can
+run on the same RunPod image.
 
 The sampling preview override uses its built-in LTX 2.3 latent-to-RGB preview.
 The optional TAE preview VAE is deliberately left disconnected because it can

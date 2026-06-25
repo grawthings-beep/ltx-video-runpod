@@ -97,7 +97,6 @@
     {
       "name": "Reasoning I2V V3 LoRA (uwgm)",
       "enabled": true,
-      "required": false,
       "url": "https://huggingface.co/uwgm/nikke-loras/resolve/main/LTX2.3_reasoning_I2V_V3.safetensors?download=true",
       "path": "models/loras/ltx23/LTX2.3_reasoning_I2V_V3.safetensors",
       "headers": {

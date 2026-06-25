@@ -64,9 +64,22 @@ class WorkflowTests(unittest.TestCase):
                 output.read_text(encoding="utf-8"),
                 generate_two_stage_workflows.render(source_name),
             )
+        for (
+            source_name,
+            output_name,
+        ) in generate_two_stage_workflows.DASIWA_HYBRID_TARGETS.items():
+            output = ROOT / "workflows" / output_name
+            self.assertEqual(
+                output.read_text(encoding="utf-8"),
+                generate_two_stage_workflows.render_dasiwa_hybrid(source_name),
+            )
 
     def test_two_stage_workflows_have_complete_graphs(self):
-        for output_name in generate_two_stage_workflows.TARGETS.values():
+        outputs = [
+            *generate_two_stage_workflows.TARGETS.values(),
+            *generate_two_stage_workflows.DASIWA_HYBRID_TARGETS.values(),
+        ]
+        for output_name in outputs:
             workflow = json.loads(
                 (ROOT / "workflows" / output_name).read_text(encoding="utf-8")
             )
@@ -95,18 +108,40 @@ class WorkflowTests(unittest.TestCase):
             types = [node["type"] for node in nodes.values()]
             self.assertIn("LatentUpscaleModelLoader", types)
             self.assertIn("LTXVLatentUpsampler", types)
-            self.assertIn("ManualSigmas", types)
             self.assertIn("VAEDecodeTiled", types)
             self.assertEqual(types.count("SamplerCustomAdvanced"), 2)
             self.assertEqual(types.count("LTXVSeparateAVLatent"), 2)
 
-            sigma_node = next(
-                node for node in nodes.values() if node["type"] == "ManualSigmas"
-            )
-            self.assertEqual(
-                sigma_node["widgets_values"][0],
-                generate_two_stage_workflows.SECOND_STAGE_SIGMAS,
-            )
+            if "dasiwa_hybrid" in output_name:
+                self.assertIn("BasicScheduler", types)
+                sigma_node = next(
+                    node
+                    for node in nodes.values()
+                    if node.get("title") == "2ND PASS: DASIWA SCHEDULER"
+                )
+                self.assertEqual(
+                    sigma_node["widgets_values"],
+                    [
+                        generate_two_stage_workflows.DASIWA_SECOND_STAGE_SCHEDULER,
+                        generate_two_stage_workflows.DASIWA_SECOND_STAGE_STEPS,
+                        generate_two_stage_workflows.DASIWA_SECOND_STAGE_DENOISE,
+                    ],
+                )
+                scheduler_link = next(
+                    link
+                    for link in links.values()
+                    if link[3:5] == [sigma_node["id"], 0]
+                )
+                self.assertEqual(scheduler_link[1:3], [320, 0])
+            else:
+                self.assertIn("ManualSigmas", types)
+                sigma_node = next(
+                    node for node in nodes.values() if node["type"] == "ManualSigmas"
+                )
+                self.assertEqual(
+                    sigma_node["widgets_values"][0],
+                    generate_two_stage_workflows.SECOND_STAGE_SIGMAS,
+                )
 
             upscale_loader = next(
                 node
@@ -119,10 +154,36 @@ class WorkflowTests(unittest.TestCase):
             )
 
             size_node = nodes[183]
-            self.assertEqual(
-                size_node["widgets_values"][1],
-                generate_two_stage_workflows.FIRST_STAGE_MEGAPIXELS,
-            )
+            if "dasiwa_hybrid" in output_name:
+                self.assertEqual(
+                    size_node["widgets_values"][1],
+                    generate_two_stage_workflows.DASIWA_FIRST_STAGE_MEGAPIXELS,
+                )
+                self.assertEqual(
+                    nodes[292]["widgets_values"][0],
+                    generate_two_stage_workflows.DASIWA_GUIDE_LONG_EDGE,
+                )
+                self.assertEqual(
+                    nodes[322]["widgets_values"][1],
+                    generate_two_stage_workflows.DASIWA_DISTILLED_LORA_STRENGTH,
+                )
+                self.assertEqual(
+                    nodes[323]["widgets_values"],
+                    [
+                        generate_two_stage_workflows.DASIWA_REASONING_LORA,
+                        generate_two_stage_workflows.DASIWA_REASONING_LORA_STRENGTH,
+                    ],
+                )
+                self.assertEqual(nodes[323]["mode"], 0)
+                self.assertEqual(
+                    nodes[325]["widgets_values"]["crf"],
+                    generate_two_stage_workflows.DASIWA_VIDEO_CRF,
+                )
+            else:
+                self.assertEqual(
+                    size_node["widgets_values"][1],
+                    generate_two_stage_workflows.FIRST_STAGE_MEGAPIXELS,
+                )
 
             if "first_last_same" in output_name:
                 second_stage_guide = next(
@@ -167,6 +228,10 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn(
             "models/latent_upscale_models/"
             + generate_two_stage_workflows.UPSCALE_MODEL,
+            paths,
+        )
+        self.assertIn(
+            "models/loras/" + generate_two_stage_workflows.DASIWA_REASONING_LORA,
             paths,
         )
         self.assertNotIn("models/vae/LTX23_video_vae_bf16.safetensors", paths)

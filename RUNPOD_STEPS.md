@@ -117,6 +117,18 @@ The two-stage workflow generates a roughly 0.5-megapixel first pass, performs
 LTX latent x2 spatial upscaling, then runs a four-step refinement pass before
 tiled VAE decode. It is slower and needs more VRAM than the original workflow.
 
+For the 10Eros-audio plus DaSiWa-style clearer-video preset, select:
+
+```text
+video_ltx23_i2v_first_last_same_dasiwa_hybrid.json
+```
+
+This keeps the 10Eros checkpoint/audio VAE path, raises the visual first pass to
+0.83 MP, applies the LTX 2.3 spatial latent upscaler, uses a DaSiWa-style
+4-step `linear_quadratic` refinement at 0.42 denoise, enables the
+`LTX2.3_reasoning_I2V_V3` LoRA, and saves the MP4 at CRF 16. If VRAM is too
+tight, use `_2stage_hq` or lower the `SIZE` node in the hybrid workflow.
+
 The container installs all bundled JSON workflows into
 `/workspace/comfyui/user/default/workflows` at startup, including the simple and
-perfect-loop variants in both one-stage and two-stage form.
+perfect-loop variants in one-stage, two-stage, and DaSiWa-hybrid form.
