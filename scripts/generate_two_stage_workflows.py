@@ -23,6 +23,8 @@ DASIWA_FAST_GUIDE_LONG_EDGE = 1536
 DASIWA_VIDEO_CRF = 16
 DASIWA_HYBRID_VIDEO_PREFIX = "LTX23-DaSiWaHybrid"
 DASIWA_FAST_VIDEO_PREFIX = "LTX23-DaSiWaFast"
+FIRST_LAST_PAIR_GUIDE_VALUES = ["2", 0, 0.85, -1, 0.55]
+FIRST_LAST_PAIR_SECOND_STAGE_GUIDE_VALUES = ["2", 0, 0.6, -1, 0.35]
 
 TARGETS = {
     "video_ltx23_i2v_simple.json": "video_ltx23_i2v_simple_2stage_hq.json",
@@ -42,6 +44,12 @@ DASIWA_FAST_TARGETS = {
     "video_ltx23_i2v_simple.json": "video_ltx23_i2v_simple_dasiwa_fast.json",
     "video_ltx23_i2v_first_last_same.json": (
         "video_ltx23_i2v_first_last_same_dasiwa_fast.json"
+    ),
+}
+
+DASIWA_FAST_PAIR_TARGETS = {
+    "video_ltx23_i2v_first_last_same.json": (
+        "video_ltx23_i2v_first_last_pair_dasiwa_fast.json"
     ),
 }
 
@@ -306,7 +314,83 @@ def apply_dasiwa_settings(workflow, *, fast=False):
     )
 
 
-def add_second_stage(workflow, *, dasiwa_hybrid=False, dasiwa_fast=False):
+def add_first_last_pair_input(workflow):
+    source_guide = node_by_id(workflow, 317)
+    source_guide["title"] = "FIRST / LAST PAIR (separate images)"
+    source_guide["widgets_values"] = FIRST_LAST_PAIR_GUIDE_VALUES.copy()
+
+    last_image_id = new_node_id(workflow)
+    last_image = clone_node(
+        workflow,
+        98,
+        last_image_id,
+        [node_by_id(workflow, 98)["pos"][0] + 390, node_by_id(workflow, 98)["pos"][1]],
+        "Last Frame Image",
+    )
+    last_image["widgets_values"] = ["last_frame.png", "image"]
+    workflow["nodes"].append(last_image)
+
+    last_resize_id = new_node_id(workflow)
+    last_resize = clone_node(
+        workflow,
+        291,
+        last_resize_id,
+        [node_by_id(workflow, 291)["pos"][0] + 390, node_by_id(workflow, 291)["pos"][1]],
+        "Last Frame: Match First Size",
+    )
+    workflow["nodes"].append(last_resize)
+
+    last_long_edge_id = new_node_id(workflow)
+    last_long_edge = clone_node(
+        workflow,
+        292,
+        last_long_edge_id,
+        [node_by_id(workflow, 292)["pos"][0] + 390, node_by_id(workflow, 292)["pos"][1]],
+        "Last Frame: Guide Resize",
+    )
+    workflow["nodes"].append(last_long_edge)
+
+    last_preprocess_id = new_node_id(workflow)
+    last_preprocess = clone_node(
+        workflow,
+        275,
+        last_preprocess_id,
+        [node_by_id(workflow, 275)["pos"][0] + 390, node_by_id(workflow, 275)["pos"][1]],
+        "Last Frame: LTX Preprocess",
+    )
+    workflow["nodes"].append(last_preprocess)
+
+    add_link(workflow, last_image_id, 0, last_resize_id, 0, "IMAGE")
+    add_link(workflow, 280, 0, last_resize_id, 2, "INT")
+    add_link(workflow, 280, 1, last_resize_id, 3, "INT")
+    add_link(workflow, last_resize_id, 0, last_long_edge_id, 0, "IMAGE")
+    add_link(workflow, last_long_edge_id, 0, last_preprocess_id, 0, "IMAGE")
+
+    remove_target_link(workflow, 317, 5)
+    add_link(workflow, last_preprocess_id, 0, 317, 5, "IMAGE")
+
+
+def route_decoded_video_directly(workflow):
+    for target_id, target_slot in ((343, 0), (344, 0), (344, 1)):
+        if any(node["id"] == target_id for node in workflow["nodes"]):
+            remove_target_link(workflow, target_id, target_slot)
+    remove_target_link(workflow, 325, 0)
+    add_link(workflow, 254, 0, 325, 0, "IMAGE")
+
+
+def second_stage_group_title(*, dasiwa_hybrid=False, dasiwa_fast=False, first_last_pair=False):
+    if first_last_pair:
+        return "2nd Pass: Fast DaSiWa start/end keyframe latent x2 + soft refine"
+    if dasiwa_fast:
+        return "2nd Pass: Fast DaSiWa-style latent x2 + 4-step refine"
+    if dasiwa_hybrid:
+        return "2nd Pass: DaSiWa-style latent x2 + 4-step refine"
+    return "2nd Pass: Latent x2 + 4-step refine"
+
+
+def add_second_stage(
+    workflow, *, dasiwa_hybrid=False, dasiwa_fast=False, first_last_pair=False
+):
     # A 0.5 MP first pass becomes roughly 2 MP after the x2 spatial upscaler.
     node_by_id(workflow, 183)["widgets_values"][1] = FIRST_STAGE_MEGAPIXELS
     if dasiwa_hybrid or dasiwa_fast:
@@ -334,7 +418,11 @@ def add_second_stage(workflow, *, dasiwa_hybrid=False, dasiwa_fast=False):
         "2ND PASS: RE-APPLY IMAGE GUIDE",
     )
     if guide.get("widgets_values", [None])[0] == "2":
-        guide["widgets_values"] = LOOP_SECOND_STAGE_GUIDE_VALUES.copy()
+        guide["widgets_values"] = (
+            FIRST_LAST_PAIR_SECOND_STAGE_GUIDE_VALUES.copy()
+            if first_last_pair
+            else LOOP_SECOND_STAGE_GUIDE_VALUES.copy()
+        )
     workflow["nodes"].append(guide)
 
     guider_id = new_node_id(workflow)
@@ -443,14 +531,10 @@ def add_second_stage(workflow, *, dasiwa_hybrid=False, dasiwa_fast=False):
         {
             "id": max(group.get("id", 0) for group in workflow.get("groups", []))
             + 1,
-            "title": (
-                "2nd Pass: Fast DaSiWa-style latent x2 + 4-step refine"
-                if dasiwa_fast
-                else (
-                    "2nd Pass: DaSiWa-style latent x2 + 4-step refine"
-                    if dasiwa_hybrid
-                    else "2nd Pass: Latent x2 + 4-step refine"
-                )
+            "title": second_stage_group_title(
+                dasiwa_hybrid=dasiwa_hybrid,
+                dasiwa_fast=dasiwa_fast,
+                first_last_pair=first_last_pair,
             ),
             "bounding": [3825, 5505, 1810, 735],
             "color": "#3f789e",
@@ -493,6 +577,19 @@ def render_dasiwa_fast(source_name):
     )
 
 
+def render_dasiwa_fast_pair(source_name):
+    source = WORKFLOWS / source_name
+    workflow = json.loads(source.read_text(encoding="utf-8"))
+    add_first_last_pair_input(workflow)
+    workflow = add_second_stage(
+        workflow,
+        dasiwa_fast=True,
+        first_last_pair=True,
+    )
+    route_decoded_video_directly(workflow)
+    return json.dumps(workflow, ensure_ascii=False, indent=2) + "\n"
+
+
 def main():
     for source_name, output_name in TARGETS.items():
         output = WORKFLOWS / output_name
@@ -505,6 +602,10 @@ def main():
     for source_name, output_name in DASIWA_FAST_TARGETS.items():
         output = WORKFLOWS / output_name
         output.write_text(render_dasiwa_fast(source_name), encoding="utf-8")
+        print(f"Wrote {output}")
+    for source_name, output_name in DASIWA_FAST_PAIR_TARGETS.items():
+        output = WORKFLOWS / output_name
+        output.write_text(render_dasiwa_fast_pair(source_name), encoding="utf-8")
         print(f"Wrote {output}")
 
 

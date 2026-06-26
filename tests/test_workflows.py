@@ -82,12 +82,22 @@ class WorkflowTests(unittest.TestCase):
                 output.read_text(encoding="utf-8"),
                 generate_two_stage_workflows.render_dasiwa_fast(source_name),
             )
+        for (
+            source_name,
+            output_name,
+        ) in generate_two_stage_workflows.DASIWA_FAST_PAIR_TARGETS.items():
+            output = ROOT / "workflows" / output_name
+            self.assertEqual(
+                output.read_text(encoding="utf-8"),
+                generate_two_stage_workflows.render_dasiwa_fast_pair(source_name),
+            )
 
     def test_two_stage_workflows_have_complete_graphs(self):
         outputs = [
             *generate_two_stage_workflows.TARGETS.values(),
             *generate_two_stage_workflows.DASIWA_HYBRID_TARGETS.values(),
             *generate_two_stage_workflows.DASIWA_FAST_TARGETS.values(),
+            *generate_two_stage_workflows.DASIWA_FAST_PAIR_TARGETS.values(),
         ]
         for output_name in outputs:
             workflow = json.loads(
@@ -256,6 +266,44 @@ class WorkflowTests(unittest.TestCase):
                 self.assertIsNotNone(decoded_to_copy)
                 self.assertIsNotNone(copy_to_replace)
                 self.assertIsNotNone(replace_to_video)
+
+            if "first_last_pair" in output_name:
+                first_stage_guide = nodes[317]
+                self.assertEqual(
+                    first_stage_guide["widgets_values"],
+                    generate_two_stage_workflows.FIRST_LAST_PAIR_GUIDE_VALUES,
+                )
+                last_image = next(
+                    node
+                    for node in nodes.values()
+                    if node.get("title") == "Last Frame Image"
+                )
+                self.assertEqual(last_image["widgets_values"], ["last_frame.png", "image"])
+
+                first_guide_link = links[first_stage_guide["inputs"][4]["link"]]
+                last_guide_link = links[first_stage_guide["inputs"][5]["link"]]
+                self.assertEqual(first_guide_link[1:3], [275, 0])
+                self.assertNotEqual(first_guide_link[1], last_guide_link[1])
+                self.assertEqual(
+                    nodes[last_guide_link[1]].get("title"),
+                    "Last Frame: LTX Preprocess",
+                )
+
+                second_stage_guide = next(
+                    node
+                    for node in nodes.values()
+                    if node.get("title") == "2ND PASS: RE-APPLY IMAGE GUIDE"
+                )
+                self.assertEqual(
+                    second_stage_guide["widgets_values"],
+                    generate_two_stage_workflows.FIRST_LAST_PAIR_SECOND_STAGE_GUIDE_VALUES,
+                )
+
+                video_link = links[nodes[325]["inputs"][0]["link"]]
+                self.assertEqual(video_link[1:3], [254, 0])
+                for link in links.values():
+                    self.assertNotIn(link[1], (343, 344))
+                    self.assertNotIn(link[3], (343, 344))
 
     def test_manifest_contains_two_stage_models(self):
         manifest = json.loads(

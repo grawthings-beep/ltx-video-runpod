@@ -126,6 +126,7 @@ video_ltx23_i2v_simple_2stage_hq.json
 video_ltx23_i2v_first_last_same_2stage_hq.json
 video_ltx23_i2v_simple_dasiwa_fast.json
 video_ltx23_i2v_first_last_same_dasiwa_fast.json
+video_ltx23_i2v_first_last_pair_dasiwa_fast.json
 video_ltx23_i2v_simple_dasiwa_hybrid.json
 video_ltx23_i2v_first_last_same_dasiwa_hybrid.json
 ```
@@ -170,6 +171,15 @@ changes, but leaves the first pass at `0.5` MP and the image guide longer edge
 at `1536`. This makes it much closer to `_2stage_hq` speed while still using the
 DaSiWa-style 4-step refine and lower CRF output.
 
+Select `video_ltx23_i2v_first_last_pair_dasiwa_fast.json` when you have separate
+first-frame and last-frame images and want the motion to interpolate between
+them. Replace both the normal `LoadImage` input and the `Last Frame Image` input.
+This workflow uses softer endpoint guide strengths and sends the decoded video
+directly to `VHS_VideoCombine`; it does not copy frame `0` over the final frame.
+For a seamless loop, make the last-frame image visually close to the first-frame
+image. If the images describe very different poses or scenes, the result is a
+start-to-end transition rather than a perfect loop.
+
 The hybrid workflows are heavier than `_2stage_hq`. If VRAM becomes tight,
 fall back to `_2stage_hq` or reduce the `SIZE` node from `0.83` toward `0.65`.
 
@@ -189,13 +199,13 @@ The optional TAE preview VAE is deliberately left disconnected because it can
 produce an all-black progress preview on some ComfyUI/KJNodes combinations.
 This preview setting does not change the final VAE decode.
 
-It reuses the single `LoadImage` input at frame `0` and frame `-1` (the final
-frame), so the endpoint follows changes to duration and frame rate automatically.
-The first-frame guide uses `0.9`, matching the simple workflow. The last-frame
-guide is deliberately softer at `0.35` so the image condition does not overpower
-the prompt and LoRAs. In the two-stage loop workflow, the refinement pass uses
-even softer `0.7` and `0.2` endpoint guides to avoid applying the same image
-condition at full strength twice.
+The `first_last_same` loop workflow reuses the single `LoadImage` input at frame
+`0` and frame `-1` (the final frame), so the endpoint follows changes to duration
+and frame rate automatically. The first-frame guide uses `0.9`, matching the
+simple workflow. The last-frame guide is deliberately softer at `0.35` so the
+image condition does not overpower the prompt and LoRAs. In the two-stage loop
+workflow, the refinement pass uses even softer `0.7` and `0.2` endpoint guides to
+avoid applying the same image condition at full strength twice.
 
 After decoding, the workflow also copies decoded frame `0` over frame `-1`
 immediately before `VHS_VideoCombine`. This preserves the frame count and makes

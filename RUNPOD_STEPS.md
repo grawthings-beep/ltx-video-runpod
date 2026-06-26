@@ -139,7 +139,20 @@ This keeps the 10Eros audio path, Reasoning I2V LoRA, DaSiWa-style
 `linear_quadratic` 4-step refinement, and CRF 16 output, but leaves the first
 pass at 0.5 MP and the image guide longer edge at 1536 for much better speed.
 
+For a more natural start-to-end motion with separate first and last images,
+select:
+
+```text
+video_ltx23_i2v_first_last_pair_dasiwa_fast.json
+```
+
+Replace the normal `LoadImage` node with the first frame and the
+`Last Frame Image` node with the desired final frame. This preset does not
+force-copy the first decoded frame over the end of the video, so it is smoother
+for motion but requires the final image to be visually close to the first image
+if you want a seamless loop.
+
 The container installs all bundled JSON workflows into
 `/workspace/comfyui/user/default/workflows` at startup, including the simple and
 perfect-loop variants in one-stage, two-stage, DaSiWa-fast, and DaSiWa-hybrid
-form.
+form, plus the DaSiWa-fast separate first/last-frame preset.
