@@ -73,11 +73,21 @@ class WorkflowTests(unittest.TestCase):
                 output.read_text(encoding="utf-8"),
                 generate_two_stage_workflows.render_dasiwa_hybrid(source_name),
             )
+        for (
+            source_name,
+            output_name,
+        ) in generate_two_stage_workflows.DASIWA_FAST_TARGETS.items():
+            output = ROOT / "workflows" / output_name
+            self.assertEqual(
+                output.read_text(encoding="utf-8"),
+                generate_two_stage_workflows.render_dasiwa_fast(source_name),
+            )
 
     def test_two_stage_workflows_have_complete_graphs(self):
         outputs = [
             *generate_two_stage_workflows.TARGETS.values(),
             *generate_two_stage_workflows.DASIWA_HYBRID_TARGETS.values(),
+            *generate_two_stage_workflows.DASIWA_FAST_TARGETS.values(),
         ]
         for output_name in outputs:
             workflow = json.loads(
@@ -112,7 +122,7 @@ class WorkflowTests(unittest.TestCase):
             self.assertEqual(types.count("SamplerCustomAdvanced"), 2)
             self.assertEqual(types.count("LTXVSeparateAVLatent"), 2)
 
-            if "dasiwa_hybrid" in output_name:
+            if "dasiwa_" in output_name:
                 self.assertIn("BasicScheduler", types)
                 sigma_node = next(
                     node
@@ -178,6 +188,39 @@ class WorkflowTests(unittest.TestCase):
                 self.assertEqual(
                     nodes[325]["widgets_values"]["crf"],
                     generate_two_stage_workflows.DASIWA_VIDEO_CRF,
+                )
+                self.assertEqual(
+                    nodes[325]["widgets_values"]["filename_prefix"],
+                    generate_two_stage_workflows.DASIWA_HYBRID_VIDEO_PREFIX,
+                )
+            elif "dasiwa_fast" in output_name:
+                self.assertEqual(
+                    size_node["widgets_values"][1],
+                    generate_two_stage_workflows.DASIWA_FAST_FIRST_STAGE_MEGAPIXELS,
+                )
+                self.assertEqual(
+                    nodes[292]["widgets_values"][0],
+                    generate_two_stage_workflows.DASIWA_FAST_GUIDE_LONG_EDGE,
+                )
+                self.assertEqual(
+                    nodes[322]["widgets_values"][1],
+                    generate_two_stage_workflows.DASIWA_DISTILLED_LORA_STRENGTH,
+                )
+                self.assertEqual(
+                    nodes[323]["widgets_values"],
+                    [
+                        generate_two_stage_workflows.DASIWA_REASONING_LORA,
+                        generate_two_stage_workflows.DASIWA_REASONING_LORA_STRENGTH,
+                    ],
+                )
+                self.assertEqual(nodes[323]["mode"], 0)
+                self.assertEqual(
+                    nodes[325]["widgets_values"]["crf"],
+                    generate_two_stage_workflows.DASIWA_VIDEO_CRF,
+                )
+                self.assertEqual(
+                    nodes[325]["widgets_values"]["filename_prefix"],
+                    generate_two_stage_workflows.DASIWA_FAST_VIDEO_PREFIX,
                 )
             else:
                 self.assertEqual(

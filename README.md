@@ -124,6 +124,8 @@ video_ltx23_i2v_simple.json
 video_ltx23_i2v_first_last_same.json
 video_ltx23_i2v_simple_2stage_hq.json
 video_ltx23_i2v_first_last_same_2stage_hq.json
+video_ltx23_i2v_simple_dasiwa_fast.json
+video_ltx23_i2v_first_last_same_dasiwa_fast.json
 video_ltx23_i2v_simple_dasiwa_hybrid.json
 video_ltx23_i2v_first_last_same_dasiwa_hybrid.json
 ```
@@ -161,6 +163,12 @@ side:
 - Apply `LTX2.3_reasoning_I2V_V3.safetensors` at strength `1.0`.
 - Reduce the distilled LoRA strength to `0.5`.
 - Save with `crf=16` to preserve more video detail.
+
+Select a `_dasiwa_fast` workflow when generation time matters more than maximum
+resolution. It keeps the same 10Eros audio path and DaSiWa-style scheduler/LoRA
+changes, but leaves the first pass at `0.5` MP and the image guide longer edge
+at `1536`. This makes it much closer to `_2stage_hq` speed while still using the
+DaSiWa-style 4-step refine and lower CRF output.
 
 The hybrid workflows are heavier than `_2stage_hq`. If VRAM becomes tight,
 fall back to `_2stage_hq` or reduce the `SIZE` node from `0.83` toward `0.65`.

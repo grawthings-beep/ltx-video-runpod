@@ -18,7 +18,11 @@ DASIWA_REASONING_LORA = "ltx23/LTX2.3_reasoning_I2V_V3.safetensors"
 DASIWA_REASONING_LORA_STRENGTH = 1
 DASIWA_DISTILLED_LORA_STRENGTH = 0.5
 DASIWA_GUIDE_LONG_EDGE = 1920
+DASIWA_FAST_FIRST_STAGE_MEGAPIXELS = FIRST_STAGE_MEGAPIXELS
+DASIWA_FAST_GUIDE_LONG_EDGE = 1536
 DASIWA_VIDEO_CRF = 16
+DASIWA_HYBRID_VIDEO_PREFIX = "LTX23-DaSiWaHybrid"
+DASIWA_FAST_VIDEO_PREFIX = "LTX23-DaSiWaFast"
 
 TARGETS = {
     "video_ltx23_i2v_simple.json": "video_ltx23_i2v_simple_2stage_hq.json",
@@ -31,6 +35,13 @@ DASIWA_HYBRID_TARGETS = {
     "video_ltx23_i2v_simple.json": "video_ltx23_i2v_simple_dasiwa_hybrid.json",
     "video_ltx23_i2v_first_last_same.json": (
         "video_ltx23_i2v_first_last_same_dasiwa_hybrid.json"
+    ),
+}
+
+DASIWA_FAST_TARGETS = {
+    "video_ltx23_i2v_simple.json": "video_ltx23_i2v_simple_dasiwa_fast.json",
+    "video_ltx23_i2v_first_last_same.json": (
+        "video_ltx23_i2v_first_last_same_dasiwa_fast.json"
     ),
 }
 
@@ -267,9 +278,15 @@ def use_tiled_decode(workflow):
     decode["widgets_values"] = [768, 64, 4096, 4]
 
 
-def apply_dasiwa_hybrid_settings(workflow):
-    node_by_id(workflow, 183)["widgets_values"][1] = DASIWA_FIRST_STAGE_MEGAPIXELS
-    node_by_id(workflow, 292)["widgets_values"][0] = DASIWA_GUIDE_LONG_EDGE
+def apply_dasiwa_settings(workflow, *, fast=False):
+    node_by_id(workflow, 183)["widgets_values"][1] = (
+        DASIWA_FAST_FIRST_STAGE_MEGAPIXELS
+        if fast
+        else DASIWA_FIRST_STAGE_MEGAPIXELS
+    )
+    node_by_id(workflow, 292)["widgets_values"][0] = (
+        DASIWA_FAST_GUIDE_LONG_EDGE if fast else DASIWA_GUIDE_LONG_EDGE
+    )
 
     distilled_lora = node_by_id(workflow, 322)
     distilled_lora["widgets_values"][1] = DASIWA_DISTILLED_LORA_STRENGTH
@@ -284,14 +301,16 @@ def apply_dasiwa_hybrid_settings(workflow):
 
     video_combine = node_by_id(workflow, 325)
     video_combine["widgets_values"]["crf"] = DASIWA_VIDEO_CRF
-    video_combine["widgets_values"]["filename_prefix"] = "LTX23-DaSiWaHybrid"
+    video_combine["widgets_values"]["filename_prefix"] = (
+        DASIWA_FAST_VIDEO_PREFIX if fast else DASIWA_HYBRID_VIDEO_PREFIX
+    )
 
 
-def add_second_stage(workflow, *, dasiwa_hybrid=False):
+def add_second_stage(workflow, *, dasiwa_hybrid=False, dasiwa_fast=False):
     # A 0.5 MP first pass becomes roughly 2 MP after the x2 spatial upscaler.
     node_by_id(workflow, 183)["widgets_values"][1] = FIRST_STAGE_MEGAPIXELS
-    if dasiwa_hybrid:
-        apply_dasiwa_hybrid_settings(workflow)
+    if dasiwa_hybrid or dasiwa_fast:
+        apply_dasiwa_settings(workflow, fast=dasiwa_fast)
 
     remove_target_link(workflow, 254, 0)
     remove_target_link(workflow, 255, 0)
@@ -334,7 +353,7 @@ def add_second_stage(workflow, *, dasiwa_hybrid=False):
     sampler_select["widgets_values"] = ["euler_cfg_pp"]
     workflow["nodes"].append(sampler_select)
 
-    if dasiwa_hybrid:
+    if dasiwa_hybrid or dasiwa_fast:
         sigmas_id = make_basic_scheduler(workflow)
     else:
         sigmas_id = make_manual_sigmas(workflow)
@@ -408,7 +427,7 @@ def add_second_stage(workflow, *, dasiwa_hybrid=False):
     add_link(workflow, 286, 0, sampler_id, 0, "NOISE")
     add_link(workflow, guider_id, 0, sampler_id, 1, "GUIDER")
     add_link(workflow, sampler_select_id, 0, sampler_id, 2, "SAMPLER")
-    if dasiwa_hybrid:
+    if dasiwa_hybrid or dasiwa_fast:
         add_link(workflow, 320, 0, sigmas_id, 0, "MODEL")
     add_link(workflow, sigmas_id, 0, sampler_id, 3, "SIGMAS")
     add_link(workflow, concat_id, 0, sampler_id, 4, "LATENT")
@@ -425,9 +444,13 @@ def add_second_stage(workflow, *, dasiwa_hybrid=False):
             "id": max(group.get("id", 0) for group in workflow.get("groups", []))
             + 1,
             "title": (
-                "2nd Pass: DaSiWa-style latent x2 + 4-step refine"
-                if dasiwa_hybrid
-                else "2nd Pass: Latent x2 + 4-step refine"
+                "2nd Pass: Fast DaSiWa-style latent x2 + 4-step refine"
+                if dasiwa_fast
+                else (
+                    "2nd Pass: DaSiWa-style latent x2 + 4-step refine"
+                    if dasiwa_hybrid
+                    else "2nd Pass: Latent x2 + 4-step refine"
+                )
             ),
             "bounding": [3825, 5505, 1810, 735],
             "color": "#3f789e",
@@ -457,6 +480,19 @@ def render_dasiwa_hybrid(source_name):
     )
 
 
+def render_dasiwa_fast(source_name):
+    source = WORKFLOWS / source_name
+    workflow = json.loads(source.read_text(encoding="utf-8"))
+    return (
+        json.dumps(
+            add_second_stage(workflow, dasiwa_fast=True),
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n"
+    )
+
+
 def main():
     for source_name, output_name in TARGETS.items():
         output = WORKFLOWS / output_name
@@ -465,6 +501,10 @@ def main():
     for source_name, output_name in DASIWA_HYBRID_TARGETS.items():
         output = WORKFLOWS / output_name
         output.write_text(render_dasiwa_hybrid(source_name), encoding="utf-8")
+        print(f"Wrote {output}")
+    for source_name, output_name in DASIWA_FAST_TARGETS.items():
+        output = WORKFLOWS / output_name
+        output.write_text(render_dasiwa_fast(source_name), encoding="utf-8")
         print(f"Wrote {output}")
 
 

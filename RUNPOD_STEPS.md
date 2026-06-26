@@ -129,6 +129,17 @@ This keeps the 10Eros checkpoint/audio VAE path, raises the visual first pass to
 `LTX2.3_reasoning_I2V_V3` LoRA, and saves the MP4 at CRF 16. If VRAM is too
 tight, use `_2stage_hq` or lower the `SIZE` node in the hybrid workflow.
 
+For a faster DaSiWa-style preset, select:
+
+```text
+video_ltx23_i2v_first_last_same_dasiwa_fast.json
+```
+
+This keeps the 10Eros audio path, Reasoning I2V LoRA, DaSiWa-style
+`linear_quadratic` 4-step refinement, and CRF 16 output, but leaves the first
+pass at 0.5 MP and the image guide longer edge at 1536 for much better speed.
+
 The container installs all bundled JSON workflows into
 `/workspace/comfyui/user/default/workflows` at startup, including the simple and
-perfect-loop variants in one-stage, two-stage, and DaSiWa-hybrid form.
+perfect-loop variants in one-stage, two-stage, DaSiWa-fast, and DaSiWa-hybrid
+form.
